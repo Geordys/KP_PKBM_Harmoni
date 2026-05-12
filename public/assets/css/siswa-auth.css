@@ -1,0 +1,714 @@
+/* Gaya Halaman Otentikasi */
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --success: #16a34a;
+  --warning: #ca8a04;
+  --error: #dc2626;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f9fafb;
+  --card-bg: #ffffff;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #f3f4f6;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.auth-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.auth-header {
+  text-align: center;
+  padding: 40px 32px 24px;
+  background: var(--bg);
+}
+
+.logo {
+  margin-bottom: 16px;
+}
+
+.logo img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.auth-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.auth-header p {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.auth-form {
+  padding: 32px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-group input::placeholder {
+  color: var(--muted);
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+
+.forgot-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auth-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.auth-btn:active {
+  transform: translateY(0);
+}
+
+.auth-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-footer {
+  padding: 24px 32px 32px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.auth-footer p {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.auth-footer a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsif */
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .auth-form {
+    padding: 24px 20px;
+  }
+
+  .auth-header {
+    padding: 32px 20px 20px;
+  }
+
+  .auth-footer {
+    padding: 20px;
+  }
+}
+
+/* Status memuat */
+.auth-btn.loading {
+  position: relative;
+}
+
+.auth-btn.loading::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Status error */
+.form-group.error input {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.password-container {
+  position: relative;
+}
+
+.password-container input {
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: color 0.2s ease;
+  z-index: 10;
+}
+
+.password-toggle:hover {
+  color: var(--primary);
+}
+
+.password-toggle:focus {
+  outline: none;
+  color: var(--primary);
+}
+
+.password-toggle svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.password-toggle svg {
+  display: block;
+}
+
+/* --- TATA LETAK LAYAR TERPISAH (Desain Ulang Daftar) --- */
+.split-layout {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  /* Lebar tetap untuk tampilan kartu */
+  min-height: 650px;
+  /* Tinggi tetap untuk tampilan kartu (sesuaikan jika perlu) */
+  background: #fff;
+  border-radius: 24px;
+  /* Sudut membulat */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  /* Bayangan lebih kuat */
+  overflow: hidden;
+  /* Potong konten sesuai radius border */
+  margin: 20px;
+  /* Jarak dari tepi viewport */
+}
+
+.split-left {
+  flex: 1.2;
+  /* Beri form sedikit lebih banyak ruang */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 50px;
+  background: #fff;
+  position: relative;
+  overflow-y: auto;
+}
+
+.split-right {
+  flex: 0.8;
+  background: var(--primary);
+  /* Biru tua untuk mencocokkan latar belakang logo (Perkiraan) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Logo Besar di Bagian Kanan */
+.hero-logo {
+  /* Menghapus gaya lingkaran putih sesuai permintaan */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.hero-logo img {
+  width: 350px;
+  /* Dibuat sedikit lebih besar untuk menjadi 'fokus' */
+  height: auto;
+  margin-bottom: 0;
+  /* Menghapus drop-shadow agar terlihat lebih menyatu/datar jika diinginkan, 
+     tapi mempertahankan yang halus membantu jika tidak cocok sempurna. 
+     User bilang "menyatu", jadi mungkin hapus bayangan? Mari pertahankan yang sangat halus atau hapus.
+     Saya akan menghapus bayangan berwarna karena mungkin bertabrakan. */
+  filter: none;
+}
+
+.hero-text {
+  text-align: center;
+  padding: 0 20px;
+  color: white;
+  /* Kembali ke putih untuk latar gelap */
+}
+
+.hero-text h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: white;
+  /* Kembali ke putih */
+}
+
+.hero-text p {
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+/* Tombol Kembali - Posisi di dalam kartu */
+.back-btn {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.back-btn:hover {
+  background: #e5e7eb;
+}
+
+/* Override timpaan untuk form terpisah */
+.split-left h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 24px;
+  text-align: center;
+  /* Gambar user menunjukkan header "Daftar" di tengah */
+}
+
+/* Sesuaikan form otentikasi di dalam layout terpisah */
+.split-left .auth-form {
+  padding: 0;
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.split-left .auth-header {
+  background: transparent;
+  padding: 0;
+  text-align: center;
+  /* Tengahkan header */
+  margin-bottom: 20px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.split-left .auth-header h1 {
+  text-align: center;
+}
+
+.split-left .auth-footer {
+  background: transparent;
+  border: none;
+  padding: 16px 0 0;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.split-left .form-group {
+  margin-bottom: 16px;
+}
+
+.split-left .form-group input {
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .split-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: auto;
+    max-width: 500px;
+  }
+
+  .split-right {
+    display: none;
+    /* Sembunyikan gambar di seluler biasanya */
+  }
+
+  .split-left {
+    padding: 30px;
+  }
+}
+
+/* Spesifik Tombol Google & Login */
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.google-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Aksen hijau untuk halaman Login agar sesuai referensi */
+.auth-btn.green-btn {
+  background: #10b981;
+}
+
+.auth-btn.green-btn:hover {
+  background: #059669;
+}
+
+.text-green {
+  color: #10b981 !important;
+}
+
+/* Gaya Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+  display: flex;
+  opacity: 1;
+}
+
+.modal-content {
+  background: white;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modal-overlay.show .modal-content {
+  transform: translateY(0);
+}
+
+.modal-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.close-modal:hover {
+  color: #ef4444;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  font-size: 15px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.modal-body p {
+  margin-bottom: 16px;
+}
+
+.modal-body ol {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.modal-body li {
+  margin-bottom: 8px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: #f9fafb;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Spesifik Modal Sukses/Selamat Datang */
+.modal-content.success-modal {
+  text-align: center;
+  max-width: 400px;
+  padding: 40px;
+  align-items: center;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #dcfce7;
+  color: #16a34a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.success-icon svg {
+  width: 40px;
+  height: 40px;
+  stroke-width: 3;
+}
+
+.modal-content h2 {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+
+.modal-content p {
+  color: #64748b;
+  font-size: 16px;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  80% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Auth Mobile Improvements */
+@media (max-width: 900px) {
+  .split-layout {
+    margin: 10px !important;
+    border-radius: 16px !important;
+  }
+
+  .split-left {
+    padding: 30px 20px !important;
+  }
+
+  .split-left h1 {
+    font-size: 22px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .auth-form {
+    padding: 0 !important;
+  }
+
+  .google-btn, .auth-btn {
+    font-size: 14px !important;
+    padding: 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 10px !important;
+  }
+
+  .back-btn {
+    top: 15px !important;
+    left: 15px !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .auth-header {
+    margin-top: 20px !important;
+  }
+}

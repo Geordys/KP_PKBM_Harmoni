@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard Admin - PKBM Harmoni</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+
+      --primary: #2563eb;
+      /* biru */
+      --primary2: #1d4ed8;
+      /* biru gelap */
+      --primarySoft: rgba(37, 99, 235, .08);
+
+      --success: #16a34a;
+      --warning: #f59e0b;
+
+      --radius: 16px;
+      --shadow: 0 2px 8px rgba(15, 23, 42, .04);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* LAYOUT */
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding: 24px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(37, 99, 235, .04);
+      border: none;
+    }
+
+    .brand img {
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      object-fit: cover;
+    }
+
+    .brand .t1 {
+      font-weight: 900;
+      letter-spacing: .14em;
+      color: var(--primary);
+      font-size: 12px;
+    }
+
+    .brand .t2 {
+      font-weight: 900;
+      font-size: 16px;
+      margin-top: 2px;
+    }
+
+    .brand .t3 {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .nav {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .nav a:hover {
+      background: rgba(37, 99, 235, .06);
+    }
+
+    .nav a.active {
+      background: rgba(37, 99, 235, .1);
+      color: var(--primary);
+    }
+
+    .nav .ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(37, 99, 235, .06);
+      border: none;
+      color: var(--primary);
+      flex: 0 0 auto;
+    }
+
+    .nav a.active .ico {
+      background: rgba(37, 99, 235, .12);
+    }
+
+    .side-footer {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    /* Logout Button at Bottom */
+    .logout-bottom {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      padding: 0;
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-logout:hover {
+      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35);
+    }
+
+    .btn-logout:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-logout svg {
+      flex-shrink: 0;
+    }
+
+    .btn-logout span {
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+
+    /* MAIN */
+    .main {
+      padding: 28px 32px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    .title p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 4px rgba(15, 23, 42, .06);
+      transition: all 0.2s ease;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      background: var(--primary2);
+      box-shadow: 0 4px 8px rgba(37, 99, 235, .2);
+    }
+
+    .btn.ghost {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .btn.ghost:hover {
+      border-color: rgba(37, 99, 235, .25);
+      background: rgba(37, 99, 235, .04);
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--success);
+      box-shadow: none;
+    }
+
+    /* CARDS */
+    .stats-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      overflow: hidden;
+      position: relative;
+      flex: 1;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
+      border-color: rgba(37, 99, 235, .15);
+    }
+
+    .card .label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card .value {
+      margin-top: 12px;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .card .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .card .pill {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: none;
+      background: rgba(37, 99, 235, .08);
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pill.blue {
+      background: rgba(37, 99, 235, .08);
+      color: var(--primary);
+    }
+
+    .pill.warn {
+      color: #d97706;
+      background: rgba(245, 158, 11, .1);
+    }
+
+    .pill.ver {
+      background: rgba(37, 99, 235, .08);
+      color: var(--primary);
+    }
+
+    .pill.acc {
+      color: #16a34a;
+      background: rgba(22, 163, 74, .1);
+    }
+
+    /* PANELS */
+    .charts-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      min-height: 320px;
+    }
+
+    .panel h3 {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .panel .sub {
+      margin: 8px 0 20px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .panel canvas {
+      max-height: 250px;
+    }
+
+    .status-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--primary2);
+      font-weight: 950;
+    }
+
+    .count {
+      font-weight: 950;
+      font-size: 16px;
+    }
+
+    /* ALERT */
+    .alert {
+      margin-top: 12px;
+      border-radius: 16px;
+      padding: 12px 12px;
+      border: 1px solid rgba(239, 68, 68, .25);
+      background: rgba(239, 68, 68, .06);
+      color: #7f1d1d;
+      display: none;
+      white-space: pre-wrap;
+      font-size: 13px;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    @media (max-width: 1100px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .panel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* RESPONSIVE (TABLET & MOBILE) */
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      /* Sidebar becomes a drawer (off-canvas) */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 1001;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+        display: block !important;
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+
+      .main {
+        padding: 16px;
+      }
+
+      /* Hamburger Button */
+      .btn-hamburger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        margin-right: 12px;
+      }
+
+      /* Overlay Background */
+      .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        backdrop-filter: blur(2px);
+      }
+
+      .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .topbar {
+        padding: 12px;
+      }
+    }
+
+    /* Hide hamburger on desktop */
+    @media (min-width: 901px) {
+      .btn-hamburger {
+        display: none;
+      }
+
+      .sidebar-overlay {
+        display: none;
+      }
+    }
+
+    /* COLORFUL CARDS REDESIGN */
+    .card-gradient {
+      flex: 1;
+      border: none;
+      border-radius: 20px;
+      padding: 24px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 140px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .card-gradient:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-gradient .card-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-gradient .label {
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0.9;
+      margin-bottom: 8px;
+      text-transform: capitalize;
+      letter-spacing: 0.5px;
+    }
+
+    .card-gradient .value {
+      font-size: 36px;
+      font-weight: 800;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .card-gradient .icon-bg {
+      position: absolute;
+      right: 15px;
+      bottom: 15px;
+      opacity: 0.2;
+      transform: scale(1.5);
+      z-index: 1;
+    }
+
+    .card-gradient .icon-small {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+      z-index: 3;
+    }
+
+    /* SPECIFIC COLORS */
+    .grad-blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    .grad-green {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .grad-teal {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+
+
+    .grad-orange {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .grad-purple {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+
+    .grad-rose {
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    }
+
+    .grad-slate {
+      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    }
+
+    /* Hide old elements in new cards */
+    .card-gradient .pill,
+    .card-gradient .hint {
+      display: none;
+    }
+
+    @media (max-width: 520px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+    }
+
+    /* Custom SweetAlert2 Styling */
+    .animated-popup {
+      border-radius: 16px !important;
+      padding: 30px !important;
+    }
+
+    .logout-confirm-btn {
+      border-radius: 10px !important;
+      padding: 12px 24px !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .logout-confirm-btn:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4) !important;
+    }
+
+    .logout-cancel-btn {
+      border-radius: 10px !important;
+      padding: 12px 24px !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      background: #f1f5f9 !important;
+      color: #64748b !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .logout-cancel-btn:hover {
+      background: #e2e8f0 !important;
+      transform: translateY(-2px) !important;
+    }
+
+    .swal2-icon.swal2-question {
+      border-color: #2563eb !important;
+      color: #2563eb !important;
+    }
+
+    .swal2-title {
+      font-size: 24px !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/assets/logo-pkbm.png" alt="Logo PKBM Harmoni">
+        <div>
+          <div class="t1">ADMIN PANEL</div>
+          <div class="t2">PKBM Harmoni</div>
+          <div class="t3">Manajemen Pendaftaran</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="active" href="dashboard_admin.html">
+          <div class="ico">
+            <!-- dashboard icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3h8v6h-8V3zM3 21h8v-6H3v6z" />
+            </svg>
+          </div>
+          Dashboard
+        </a>
+
+        <a href="kelola_pendaftaran.html">
+          <div class="ico">
+            <!-- table/list icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+          </div>
+          Kelola Pendaftaran
+        </a>
+
+        <a href="kelola_beranda.html">
+          <div class="ico">
+            <!-- image icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
+            </svg>
+          </div>
+          Kelola Beranda
+        </a>
+
+
+
+
+        <a href="pengaturan_akun.html">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+              </path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          Pengaturan Akun
+        </a>
+      </nav>
+
+      <!-- Logout Button at Bottom -->
+      <div class="logout-bottom">
+        <a href="#" id="navLogout" class="btn-logout">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <button class="btn-hamburger" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="title">
+          <p style="margin: 0 0 8px; font-weight: 600; color: var(--primary);">Halo, Selamat Datang Admin.</p>
+          <h1>Dashboard Admin</h1>
+          <p>Ringkasan pendaftaran Paket B (SMP) & Paket C (SMA).</p>
+        </div>
+
+        <div class="actions">
+          <!-- Actions dapat ditambahkan di sini jika diperlukan -->
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stats-row">
+          <section class="card-gradient grad-blue">
+            <div class="card-content">
+              <div class="label">Total Pendaftar</div>
+              <div class="value" id="tTotal">-</div>
+            </div>
+            <div class="icon-small">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+          </section>
+
+          <section class="card-gradient grad-teal">
+            <div class="card-content">
+              <div class="label">Paket B (SMP)</div>
+              <div class="value" id="tB">-</div>
+            </div>
+            <div class="icon-small">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </div>
+          </section>
+
+          <section class="card-gradient grad-purple">
+            <div class="card-content">
+              <div class="label">Paket C (SMA)</div>
+              <div class="value" id="tC">-</div>
+            </div>
+            <div class="icon-small">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            </div>
+          </section>
+        </div>
+
+        <div class="stats-row">
+          <section class="card-gradient grad-orange">
+            <div class="card-content">
+              <div class="label">Menunggu</div>
+              <div class="value" id="tMenunggu">-</div>
+            </div>
+            <div class="icon-small">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+          </section>
+
+          <section class="card-gradient grad-slate">
+            <div class="card-content">
+              <div class="label">Diverifikasi</div>
+              <div class="value" id="tVerif">-</div>
+            </div>
+            <div class="icon-small">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+          </section>
+
+          <section class="card-gradient grad-green">
+            <div class="card-content">
+              <div class="label">Diterima</div>
+              <div class="value" id="tTerima">-</div>
+            </div>
+            <div class="icon-small">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <section class="panel">
+          <h3>PENDAFTARAN PER BULAN</h3>
+          <p class="sub">Grafik pendaftaran 6 bulan terakhir.</p>
+          <canvas id="chartPendaftar" width="300" height="150"></canvas>
+        </section>
+
+        <section class="panel">
+          <h3>STATUS PENDAFTARAN</h3>
+          <p class="sub">Distribusi status pendaftaran.</p>
+          <canvas id="chartStatus" width="300" height="150"></canvas>
+        </section>
+      </div>
+
+      <div class="alert" id="alert"></div>
+
+      <!-- Footer Copyright -->
+      <footer
+        style="margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; text-align: center; font-weight: 500;">
+         &copy; 2026 PKBM Harmoni. All rights reserved.
+      </footer>
+    </main>
+
+  </div>
+
+  <script>
+    const API_BASE = "";
+
+    const token = localStorage.getItem("token_admin");
+    if (!token) location.href = "login_admin.html";
+
+    const alertEl = document.getElementById("alert");
+    const showErr = (t) => { alertEl.textContent = t; alertEl.classList.add("show"); };
+    const hideErr = () => { alertEl.textContent = ""; alertEl.classList.remove("show"); };
+
+    async function loadStats() {
+      hideErr();
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/stats`, {
+          method: "GET",
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch (e) { }
+
+        if (!res.ok) {
+          showErr("Gagal mengambil data statistik.\n\n" + (data.message || text));
+          if (res.status === 401) {
+            localStorage.removeItem("token_admin");
+            setTimeout(() => window.location.href = "login_admin.html", 700);
+          }
+          return;
+        }
+
+        document.getElementById("tTotal").textContent = data.total ?? 0;
+        document.getElementById("tB").textContent = data.paket?.B ?? 0;
+        document.getElementById("tC").textContent = data.paket?.C ?? 0;
+
+        const s = data.status || {};
+        document.getElementById("tMenunggu").textContent = s.MENUNGGU ?? 0;
+        document.getElementById("tVerif").textContent = s.DIVERIFIKASI ?? 0;
+        document.getElementById("tTerima").textContent = s.DITERIMA ?? 0;
+
+      } catch (err) {
+        showErr("Error jaringan: " + err.message);
+      }
+    }
+
+    async function loadChart() {
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/stats`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const chartData = data.chartData || {};
+        const labels = Object.keys(chartData);
+        const values = Object.values(chartData);
+
+        const ctx = document.getElementById('chartPendaftar');
+        if (!ctx) return;
+        const chartCtx = ctx.getContext('2d');
+        new Chart(chartCtx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Pendaftar',
+              data: values,
+              borderColor: 'rgba(37, 99, 235, 1)',
+              backgroundColor: 'rgba(37, 99, 235, 0.2)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      } catch (err) { console.error('Error loading chart:', err); }
+    }
+
+    async function loadChartStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/stats`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const s = data.status || {};
+        const labels = ['MENUNGGU', 'DIVERIFIKASI', 'DITERIMA'];
+        const values = [s.MENUNGGU ?? 0, s.DIVERIFIKASI ?? 0, s.DITERIMA ?? 0];
+        const colors = ['#f59e0b', '#2563eb', '#16a34a'];
+
+        const ctx = document.getElementById('chartStatus');
+        if (!ctx) return;
+        const chartCtx = ctx.getContext('2d');
+        new Chart(chartCtx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: values,
+              backgroundColor: colors,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { padding: 12, usePointStyle: true }
+              }
+            }
+          }
+        });
+      } catch (err) { console.error('Error loading status chart:', err); }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+      }
+    }
+
+    document.getElementById("navLogout").onclick = (e) => {
+      e.preventDefault();
+
+      Swal.fire({
+        title: 'Konfirmasi Logout',
+        html: '<p style="color: #64748b; font-size: 15px; margin-top: 10px;">Apakah Anda yakin ingin keluar dari sistem?</p>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle; margin-right:6px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Ya, Keluar',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        backdrop: 'rgba(0,0,0,0.4)',
+        customClass: {
+          popup: 'animated-popup',
+          confirmButton: 'logout-confirm-btn',
+          cancelButton: 'logout-cancel-btn'
+        },
+        showClass: {
+          popup: 'swal2-show',
+          backdrop: 'swal2-backdrop-show'
+        },
+        hideClass: {
+          popup: 'swal2-hide',
+          backdrop: 'swal2-backdrop-hide'
+        }
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          // Show loading
+          Swal.fire({
+            title: 'Sedang Keluar...',
+            html: '<p style="color: #64748b; font-size: 14px; margin-top: 10px;">Mohon tunggu sebentar</p>',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
+          try {
+            await fetch(`${API_BASE}/api/auth/logout`, {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + token }
+            });
+          } catch (e) {
+            console.log('Logout API call failed, continuing anyway');
+          }
+
+          localStorage.removeItem("token_admin");
+
+          // Show success message briefly before redirect
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil Keluar',
+            text: 'Anda akan dialihkan ke halaman login...',
+            timer: 1500,
+            showConfirmButton: false,
+            customClass: {
+              popup: 'animated-popup'
+            }
+          }).then(() => {
+            window.location.href = "login_admin.html";
+          });
+        }
+      });
+    };
+
+    loadStats();
+    loadChart();
+    loadChartStatus();
+  </script>
+
+</body>
+
+</html>

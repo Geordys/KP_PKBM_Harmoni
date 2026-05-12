@@ -1,0 +1,1537 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kelola Pendaftaran - PKBM Harmoni</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+
+      --primary: #2563eb;
+      --primary2: #1d4ed8;
+      --primarySoft: rgba(37, 99, 235, .08);
+
+      --success: #16a34a;
+      --warning: #f59e0b;
+
+      --radius: 16px;
+      --shadow: 0 2px 8px rgba(15, 23, 42, .04);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* LAYOUT (samakan dengan dashboard) */
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR - match dashboard styles */
+    .sidebar {
+      background: #fff;
+      border-right: 1px solid var(--line);
+      padding: 24px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(37, 99, 235, .04);
+      border: none;
+    }
+
+    .brand img {
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      object-fit: cover;
+    }
+
+    .brand .t1 {
+      font-weight: 900;
+      letter-spacing: .14em;
+      color: var(--primary);
+      font-size: 12px;
+    }
+
+    .brand .t2 {
+      font-weight: 900;
+      font-size: 16px;
+      margin-top: 2px;
+    }
+
+    .brand .t3 {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .nav {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .nav a:hover {
+      background: rgba(37, 99, 235, .06);
+    }
+
+    .nav a.active {
+      background: rgba(37, 99, 235, .1);
+      color: var(--primary);
+    }
+
+    .nav .ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(37, 99, 235, .06);
+      border: none;
+      color: var(--primary);
+      flex: 0 0 auto;
+    }
+
+    .nav a.active .ico {
+      background: rgba(37, 99, 235, .12);
+    }
+
+    .side-footer {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    /* MAIN */
+    .main {
+      padding: 22px 22px 40px;
+    }
+
+    .topbar {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+
+    .title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 900;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 12px 22px rgba(15, 23, 42, .08);
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn:hover {
+      background: var(--primary2);
+    }
+
+    .btn.ghost {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .btn.ghost:hover {
+      border-color: rgba(37, 99, 235, .25);
+      background: rgba(37, 99, 235, .03);
+    }
+
+    .btn.small {
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      box-shadow: none;
+    }
+
+    .btn.warn {
+      background: #0ea5e9;
+    }
+
+    .btn.warn:hover {
+      background: #0284c7;
+    }
+
+    /* Orange Edit Button */
+    .btn.edit {
+      background: var(--warning);
+      color: #fff;
+      position: relative;
+    }
+
+    .btn.edit:hover {
+      background: #d97706;
+    }
+
+    /* small red dot for student's edit request */
+    .admin-request-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+      pointer-events: none;
+    }
+
+    /* Red Delete Button */
+    .btn.danger {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .btn.danger:hover {
+      background: #dc2626;
+    }
+
+    /* CARD */
+    .card {
+      margin-top: 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    /* FILTER ROW */
+    .row {
+      display: grid;
+      grid-template-columns: 220px 220px 1fr 220px;
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      outline: none;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: rgba(37, 99, 235, .35);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* TABLE (banyak kolom -> scroll) */
+    .table-wrap {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 800px;
+      /* dikurangi karena kolom lebih sedikit */
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      z-index: 1;
+    }
+
+    th,
+    td {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+      /* Centered data to match headers */
+      vertical-align: middle;
+      /* Middle alignment usually looks better with center */
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--muted);
+      letter-spacing: .10em;
+      font-weight: 950;
+      font-size: 11px;
+      text-transform: uppercase;
+      text-align: center;
+      /* Centered headers */
+    }
+
+    tbody tr:hover td {
+      background: #fbfdff;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .pill.wait {
+      color: #b45309;
+      border-color: rgba(245, 158, 11, .30);
+      background: rgba(245, 158, 11, .10);
+    }
+
+    .pill.ver {
+      color: var(--primary2);
+      border-color: rgba(37, 99, 235, .25);
+      background: rgba(37, 99, 235, .06);
+    }
+
+    .pill.acc {
+      color: #15803d;
+      border-color: rgba(22, 163, 74, .30);
+      background: rgba(22, 163, 74, .10);
+    }
+
+    .msg {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      display: none;
+      /* Hidden as requested */
+    }
+
+    .btn-request-edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-request-edit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(124, 58, 237, 0.3);
+      filter: brightness(1.1);
+    }
+
+    .btn-request-edit:active {
+      transform: translateY(0);
+    }
+
+
+    @media (max-width: 1100px) {
+      .row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* RESPONSIVE (TABLET & MOBILE) */
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      /* Sidebar becomes a drawer (off-canvas) */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 1001;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+        display: block !important;
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+
+      .main {
+        padding: 16px;
+      }
+
+      /* Hamburger Button */
+      .btn-hamburger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        cursor: pointer;
+        margin-right: 12px;
+      }
+
+      /* Overlay Background */
+      .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        backdrop-filter: blur(2px);
+      }
+
+      .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .topbar {
+        padding: 12px;
+      }
+
+      table {
+        min-width: 600px;
+      }
+    }
+
+    /* Hide hamburger on desktop */
+    @media (min-width: 901px) {
+      .btn-hamburger {
+        display: none;
+      }
+
+      .sidebar-overlay {
+        display: none;
+      }
+    }
+
+    /* Custom SweetAlert2 Styling */
+    .animated-popup {
+      border-radius: 16px !important;
+      padding: 30px !important;
+    }
+
+    .logout-confirm-btn {
+      border-radius: 10px !important;
+      padding: 12px 24px !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .logout-confirm-btn:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4) !important;
+    }
+
+    .logout-cancel-btn {
+      border-radius: 10px !important;
+      padding: 12px 24px !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      background: #f1f5f9 !important;
+      color: #64748b !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .logout-cancel-btn:hover {
+      background: #e2e8f0 !important;
+      transform: translateY(-2px) !important;
+    }
+
+    .swal2-icon.swal2-question {
+      border-color: #2563eb !important;
+      color: #2563eb !important;
+    }
+
+    .swal2-title {
+      font-size: 24px !important;
+      font-weight: 700 !important;
+      color: #1e293b !important;
+    }
+
+    /* Logout Button at Bottom */
+    .logout-bottom {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      padding: 0;
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-logout:hover {
+      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35);
+    }
+
+    .btn-logout:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-logout svg {
+      flex-shrink: 0;
+    }
+
+    .btn-logout span {
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    /* MODAL EDIT STYLES */
+    .edit-modal-wrap {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 1001;
+      padding: 20px;
+      box-sizing: border-box;
+      animation: fadeIn 0.3s ease;
+      overflow-y: auto;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .edit-modal-card {
+      background: #fff;
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      position: relative;
+      border: 1px solid var(--line);
+    }
+
+    @media (max-width: 600px) {
+      .edit-modal-card {
+        padding: 20px;
+        margin: 20px auto;
+      }
+    }
+
+    .edit-modal-card h2 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 800;
+      color: #1e293b;
+      letter-spacing: -0.025em;
+    }
+
+    .edit-modal-subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 8px;
+      display: block;
+      letter-spacing: normal;
+      text-transform: none;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      font-size: 15px;
+      transition: all 0.2s;
+      color: #1e293b;
+      background: #fcfdfe;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primarySoft);
+      background: #fff;
+    }
+
+    .form-control.disabled {
+      background: #f8fafc;
+      color: #94a3b8;
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+
+    .request-edit-banner {
+      background: #fefce8;
+      border: 1px solid #fef08a;
+      border-radius: 14px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+
+    .banner-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #854d0e;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .banner-options {
+      display: flex;
+      gap: 20px;
+      background: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #fef08a;
+    }
+
+    .banner-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .banner-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .banner-hint {
+      font-size: 12px;
+      color: #71717a;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../assets/logo-pkbm.png" alt="Logo PKBM Harmoni">
+        <div>
+          <div class="t1">ADMIN PANEL</div>
+          <div class="t2">PKBM Harmoni</div>
+          <div class="t3">Manajemen Pendaftaran</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="dashboard_admin.html">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3h8v6h-8V3zM3 21h8v-6H3v6z" />
+            </svg>
+          </div>
+          Dashboard
+        </a>
+
+        <a class="active" href="kelola_pendaftaran.html">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+          </div>
+          Kelola Pendaftaran
+        </a>
+
+        <a href="kelola_beranda.html">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
+            </svg>
+          </div>
+          Kelola Beranda
+        </a>
+
+
+
+
+        <a href="pengaturan_akun.html">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+              </path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          Pengaturan Akun
+        </a>
+      </nav>
+
+      <!-- Logout Button at Bottom -->
+      <div class="logout-bottom">
+        <a href="#" id="navLogout" class="btn-logout">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <button class="btn-hamburger" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="title">
+          <h1>Kelola Pendaftaran</h1>
+          <p>Filter Paket B/C dan status, lalu verifikasi/terima pendaftar.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>Paket</label>
+            <select id="filterPaket">
+              <option value="">Semua</option>
+              <option value="B">Paket B (SMP)</option>
+              <option value="C">Paket C (SMA)</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Nama</label>
+            <input id="q" placeholder="misal: Budi" />
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn" id="btnApply">Terapkan Filter</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>No. Pendaftaran</th>
+                  <th>Nama</th>
+                  <th>Paket</th>
+                  <th>Status</th>
+                  <th>Tanggal</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr>
+                  <td colspan="6">Memuat data...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-start;">
+          <button class="btn primary" id="btnDownloadExcel">Download Excel</button>
+        </div>
+
+        <div class="msg" id="msg"></div>
+      </div>
+      <footer
+        style="margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; text-align: center; font-weight: 500;">
+        &copy; 2026 PKBM Harmoni. All rights reserved.
+      </footer>
+    </main>
+
+    <!-- MODAL DETAIL PENDAFTARAN -->
+    <div id="modalDetail"
+      style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; padding: 20px; box-sizing: border-box;">
+      <div
+        style="background: #fff; border-radius: var(--radius); max-width: 800px; margin: 0 auto; max-height: 90vh; overflow-y: auto; padding: 20px; box-shadow: var(--shadow);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0;">Detail Pendaftaran</h2>
+          <button id="btnCloseModal"
+            style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <div id="detailContent">
+          <!-- Detail akan diisi di sini -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL EDIT DATA -->
+    <div id="modalEdit" class="edit-modal-wrap">
+      <div class="edit-modal-card">
+        <h2>Edit Data Siswa</h2>
+        <p class="edit-modal-subtitle">Gunakan form ini untuk memberikan catatan atau mengelola izin edit siswa.</p>
+
+        <form id="formEdit">
+          <input type="hidden" id="editNomor">
+
+          <div class="form-group">
+            <label>Nama Lengkap</label>
+            <input type="text" id="editNama" class="form-control disabled" required readonly />
+          </div>
+
+          <div class="form-group">
+            <label>Jenis Kelamin</label>
+            <input type="text" id="editJK" class="form-control disabled" readonly />
+          </div>
+
+          <div class="form-group">
+            <label>Paket</label>
+            <select id="editPaket" class="form-control disabled" disabled>
+              <option value="B">Paket B (SMP)</option>
+              <option value="C">Paket C (SMA)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Catatan Admin (opsional)</label>
+            <textarea id="editCatatan" class="form-control" rows="4"
+              placeholder="Tambahkan catatan untuk siswa (mis. verifikasi dokumen, dokumen kurang, dll)"></textarea>
+          </div>
+
+          <div id="editRequestRow" class="request-edit-banner" style="display:none;">
+            <div class="banner-title">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Siswa Meminta Izin Edit
+            </div>
+
+            <div class="banner-options">
+              <label class="banner-label" style="color:#16a34a;">
+                <input type="checkbox" id="editAllowCheckbox"
+                  onchange="if(this.checked) el('editRejectCheckbox').checked=false">
+                Setujui Edit
+              </label>
+              <label class="banner-label" style="color:#ef4444;">
+                <input type="checkbox" id="editRejectCheckbox"
+                  onchange="if(this.checked) el('editAllowCheckbox').checked=false">
+                Tolak Edit
+              </label>
+            </div>
+
+            <div class="banner-hint">
+              <b>Setujui:</b> Siswa bisa mengedit formulir kembali.<br>
+              <b>Tolak:</b> Permintaan dihapus tanpa memberi akses.
+            </div>
+          </div>
+
+          <div
+            style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line);">
+            <button type="button" class="btn ghost" id="btnCloseEdit" style="box-shadow:none;">Batal</button>
+            <button type="submit" class="btn primary">Simpan Perubahan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const getApiBase = () => {
+      const origin = window.location.origin;
+      // Jika running di localhost:8000 (php artisan serve)
+      if (origin.includes(":8000")) {
+        return `${origin}`;
+      }
+      // Jika running di XAMPP / Apache biasa
+      return `${origin}/pkbm_laravel/public`;
+    };
+    const API_BASE = getApiBase();
+    const tokenKey = "token_admin";
+    const getToken = () => localStorage.getItem(tokenKey) || "";
+
+    if (!getToken()) {
+      window.location.href = "login_admin.html";
+    }
+
+    const el = (id) => document.getElementById(id);
+
+    const fmtDate = (s) => {
+      if (!s) return "-";
+      try {
+        // Asumsi s dari database adalah UTC (misal "2026-02-01 13:29:48").
+        // Tambahkan "Z" agar dibaca sebagai UTC, lalu browser akan konversi ke lokal (WIB).
+        // Ganti spasi dengan T agar format ISO valid: "2026-02-01T13:29:48Z"
+        let dateStr = s;
+        if (!s.includes("Z") && !s.includes("+")) {
+          dateStr = s.replace(" ", "T") + "Z";
+        }
+        return new Date(dateStr).toLocaleDateString("id-ID");
+      }
+      catch (e) { return s; }
+    };
+
+    const fmtDateTime = (s) => {
+      if (!s) return "-";
+      try {
+        let dateStr = s;
+        if (!s.includes("Z") && !s.includes("+")) {
+          dateStr = s.replace(" ", "T") + "Z";
+        }
+        return new Date(dateStr).toLocaleString("id-ID");
+      }
+      catch (e) { return s; }
+    };
+
+    const yesNo = (v) => {
+      if (v === true || v === 1 || v === "1" || String(v).toUpperCase() === "YA") return "Ya";
+      if (v === false || v === 0 || v === "0" || String(v).toUpperCase() === "TIDAK") return "Tidak";
+      return v ? String(v) : "-";
+    };
+
+    const val = (r, key, fallback = "-") => {
+      const v = r?.[key];
+      if (v === null || v === undefined || v === "") return fallback;
+      return String(v);
+    };
+
+    function pill(status) {
+      if (status === "MENUNGGU") return `<span class="pill wait">MENUNGGU</span>`;
+      if (status === "DIVERIFIKASI") return `<span class="pill ver">DIVERIFIKASI</span>`;
+      if (status === "DITERIMA") return `<span class="pill acc">DITERIMA</span>`;
+      return `<span class="pill">${status || "-"}</span>`;
+    }
+
+    let specialFilter = "";
+
+    async function loadList() {
+      const paket = specialFilter || el("filterPaket").value;
+      const qRaw = el("q").value.trim();
+      const qLower = qRaw.toLowerCase();
+
+      const tbody = el("tbody");
+      const msg = el("msg");
+      msg.textContent = "Memuat data...";
+
+      // Tetap kirim paket ke API (opsional)
+      const url = new URL(`${API_BASE}/api/admin/registrations`);
+      if (paket) url.searchParams.set("paket", paket);
+
+      // NOTE: q tidak wajib dikirim ke API (karena sering backend belum support)
+      // Kalau mau tetap dikirim juga boleh, tapi ini aman:
+      // if(qRaw) url.searchParams.set("q", qRaw);
+
+      try {
+        const res = await fetch(url.toString(), {
+          headers: { "Authorization": "Bearer " + getToken() }
+        });
+
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch (e) { }
+
+        if (!res.ok) {
+          // Cek jika errornya berupa HTML (biasanya error Laravel SQLSTATE)
+          if (text.includes("<!DOCTYPE html>") || text.includes("SQLSTATE")) {
+            const errHtml = `
+              <div style="text-align:center; padding: 20px; color: #b91c1c;">
+                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom:10px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div style="font-weight:bold; font-size:16px;">Gagal Terhubung ke Database</div>
+                <div style="font-size:14px; margin-top:4px;">Pastikan XAMPP (MySQL) sudah dijalankan.</div>
+                <div style="font-size:12px; margin-top:10px; color: #666;">Error: Connection Refused (SQLSTATE 2002)</div>
+              </div>
+            `;
+            msg.innerHTML = "";
+            tbody.innerHTML = `<tr><td colspan="6">${errHtml}</td></tr>`;
+            return;
+          }
+
+          msg.textContent = "Gagal: " + (data.message || text || "error");
+          tbody.innerHTML = `<tr><td colspan="6">Gagal memuat data.</td></tr>`;
+          return;
+        }
+
+        let rows = data.registrations || [];
+
+        // FILTER CLIENT-SIDE (Paket / Permintaan Edit)
+        const filterVal = el("filterPaket").value;
+        if (filterVal === "REQUEST_EDIT") {
+          rows = rows.filter(r => r.minta_izin_edit);
+        } else if (filterVal) {
+          rows = rows.filter(r => r.paket === filterVal);
+        }
+
+        // FILTER CLIENT-SIDE (Nama / Nomor Pendaftaran)
+        if (qRaw) {
+          rows = rows.filter(r => {
+            const nama = String(r?.nama || "").toLowerCase();
+            const nomor = String(r?.nomor_pendaftaran || "").toLowerCase();
+            return (
+              nama.includes(qLower) ||
+              nomor.includes(qLower)
+            );
+          });
+        }
+
+        if (rows.length === 0) {
+          msg.textContent = "Tidak ada data sesuai filter.";
+          tbody.innerHTML = `<tr><td colspan="6">Tidak ada data.</td></tr>`;
+          return;
+        }
+
+        window.currentRows = rows;
+
+        msg.textContent = ``; // Text removed as requested
+
+        tbody.innerHTML = rows.map(r => {
+          const aksi = `
+              <div style="display: flex; gap: 4px; align-items: center; justify-content: center;">
+                <button class="btn small" style="padding: 6px;" title="Lihat Detail" onclick="showDetail('${val(r, "nomor_pendaftaran", "")}')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="btn small edit" style="padding: 6px; position:relative;" title="Edit Data" onclick="editData('${val(r, "nomor_pendaftaran", "")}')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  ${r.minta_izin_edit ? '<span class="admin-request-dot"></span>' : ''}
+                </button>
+                <button class="btn small danger" style="padding: 6px;" title="Hapus Data" onclick="deleteData('${val(r, "nomor_pendaftaran", "")}')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+                
+                ${r.status === "MENUNGGU" ? `<button class="btn small warn" onclick="setStatus('${val(r, "nomor_pendaftaran", "")}','DIVERIFIKASI')">Verifikasi</button>` : ''}
+                ${(r.status === "MENUNGGU" || r.status === "DIVERIFIKASI") ? `<button class="btn small" onclick="setStatus('${val(r, "nomor_pendaftaran", "")}','DITERIMA')">Terima</button>` : ''}
+              </div>
+            `;
+
+          const paketTxt = r.paket === "B" ? "B (SMP)" : (r.paket === "C" ? "C (SMA)" : "-");
+
+          return `
+          <tr>
+            <td><b>${val(r, "nomor_pendaftaran")}</b></td>
+            <td>${val(r, "nama")}</td>
+            <td>${paketTxt}</td>
+            <td>${pill(val(r, "status", "-"))}</td>
+            <td>${fmtDateTime(val(r, "created_at", ""))}</td>
+            <td>${aksi}</td>
+          </tr>
+        `;
+        }).join("");
+
+      } catch (err) {
+        msg.textContent = "Error: " + err.message;
+        tbody.innerHTML = `<tr><td colspan="6">Error.</td></tr>`;
+      }
+    }
+
+    async function setStatus(nomor, status) {
+      if (!nomor) {
+        alert("Nomor pendaftaran kosong.");
+        return;
+      }
+      if (!confirm(`Ubah status ${nomor} menjadi ${status}?`)) return;
+
+      const msg = el("msg");
+      msg.textContent = "Menyimpan perubahan...";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/registrations/status`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + getToken()
+          },
+          body: JSON.stringify({ nomor_pendaftaran: nomor, status })
+        });
+
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch (e) { }
+
+        if (!res.ok) {
+          msg.textContent = "Gagal: " + (data.message || text || "error");
+          return;
+        }
+
+        msg.textContent = "Berhasil: status diperbarui.";
+        loadList();
+      } catch (err) {
+        msg.textContent = "Error: " + err.message;
+      }
+    }
+
+    async function showDetail(nomor) {
+      if (!nomor) {
+        alert("Nomor pendaftaran kosong.");
+        return;
+      }
+
+      const reg = window.currentRows?.find(r => r.nomor_pendaftaran == nomor);
+      if (!reg) {
+        alert("Data tidak ditemukan.");
+        return;
+      }
+
+      // Isi modal
+      const content = `
+        <div style="max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+          <h3 style="margin-top: 0; color: var(--primary);">Informasi Pribadi</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">Nomor Pendaftaran:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "nomor_pendaftaran")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Nama:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "nama")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Jenis Kelamin:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "jk")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">NISN:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "nisn")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">NIK:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "nik")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Tempat Lahir:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "tempat_lahir")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Tanggal Lahir:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${fmtDate(val(reg, "tanggal_lahir", ""))}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Agama:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "agama")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Paket:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${reg.paket === "B" ? "B (SMP)" : reg.paket === "C" ? "C (SMA)" : "-"}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Status:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${pill(val(reg, "status", "-"))}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Tanggal Daftar:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${fmtDateTime(val(reg, "created_at", ""))}</td></tr>
+          </table>
+
+          <h3 style="color: var(--primary);">Informasi Kontak & Pendidikan</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">Telepon:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "telepon")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">HP:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "hp")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Email:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "email")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Sekolah Asal:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "sekolah_asal")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">SKHUN:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "skhun")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Penerima KPS/KIP/PKH:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${yesNo(reg.penerima_kps_kip_pkh)}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Non KPS:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${yesNo(reg.non_kps)}</td></tr>
+          </table>
+
+          <h3 style="color: var(--primary);">Alamat Lengkap</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">Alamat:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "alamat")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">RT/RW:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "rt_rw")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Dusun:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "dusun")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Kelurahan/Desa:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "kelurahan_desa")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Kecamatan:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "kecamatan")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Kode Pos:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "kode_pos")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Jenis Tinggal:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "jenis_tinggal")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Transportasi:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "transportasi")}</td></tr>
+          </table>
+
+          <h3 style="color: var(--primary);">Data Orang Tua</h3>
+          <h4 style="margin-bottom: 10px;">Ayah</h4>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">Nama:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ayah_nama")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Tahun Lahir:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ayah_tahun_lahir")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Pendidikan:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ayah_pendidikan")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Pekerjaan:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ayah_pekerjaan")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Penghasilan:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ayah_penghasilan")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">NIK:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ayah_nik")}</td></tr>
+          </table>
+          <h4 style="margin-bottom: 10px;">Ibu</h4>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">Nama:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ibu_nama")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Tahun Lahir:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ibu_tahun_lahir")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Pendidikan:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ibu_pendidikan")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Pekerjaan:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ibu_pekerjaan")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Penghasilan:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ibu_penghasilan")}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">NIK:</td><td style="padding: 8px 20px 8px 8px; border-bottom: 1px solid #eee;">${val(reg, "ibu_nik")}</td></tr>
+          </table>
+          ${val(reg, "catatan", "") ? `<h3 style="color: var(--primary);">Catatan</h3><p style="padding-right: 20px;">${val(reg, "catatan")}</p>` : ''}
+        </div>
+      `;
+      el("detailContent").innerHTML = content;
+      el("modalDetail").style.display = "block";
+      msg.textContent = "Detail dimuat.";
+    }
+
+    async function doLogout() {
+      Swal.fire({
+        title: 'Konfirmasi Logout',
+        html: '<p style="color: #64748b; font-size: 15px; margin-top: 10px;">Apakah Anda yakin ingin keluar dari sistem?</p>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle; margin-right:6px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Ya, Keluar',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        backdrop: 'rgba(0,0,0,0.4)',
+        customClass: {
+          popup: 'animated-popup',
+          confirmButton: 'logout-confirm-btn',
+          cancelButton: 'logout-cancel-btn'
+        }
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: 'Sedang Keluar...',
+            html: '<p style="color: #64748b; font-size: 14px; margin-top: 10px;">Mohon tunggu sebentar</p>',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
+          try {
+            await fetch(`${API_BASE}/api/auth/logout`, {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + getToken() }
+            });
+          } catch (e) { }
+
+          localStorage.removeItem(tokenKey);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil Keluar',
+            text: 'Anda akan dialihkan ke halaman login...',
+            timer: 1500,
+            showConfirmButton: false
+          }).then(() => {
+            window.location.href = "login_admin.html";
+          });
+        }
+      });
+    }
+
+    async function downloadExcel() {
+      const paket = el("filterPaket").value;
+      const q = el("q").value.trim();
+
+      const msg = el("msg");
+      msg.textContent = "Mengunduh Excel...";
+
+      const url = new URL(`${API_BASE}/api/admin/registrations/excel`);
+      if (paket) url.searchParams.set("paket", paket);
+      if (q) url.searchParams.set("q", q);
+
+      try {
+        const res = await fetch(url.toString(), {
+          headers: { "Authorization": "Bearer " + getToken() }
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          let data = {};
+          try { data = JSON.parse(text); } catch (e) { }
+          msg.textContent = "Gagal: " + (data.message || text || "error");
+          return;
+        }
+
+        const blob = await res.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = 'Data_Pendaftar_Siswa_PKBM Harmoni.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+
+        msg.textContent = "Excel berhasil diunduh.";
+      } catch (e) {
+        msg.textContent = "Error: " + e.message;
+      }
+    }
+
+    /* --- EDIT & DELETE LOGIC --- */
+
+    async function deleteData(nomor) {
+      if (!confirm(`Yakin ingin menghapus data ${nomor}? Data yang dihapus tidak bisa dikembalikan.`)) return;
+
+      const msg = el("msg");
+      msg.textContent = "Menghapus data...";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/registrations/${nomor}`, {
+          method: "DELETE",
+          headers: { "Authorization": "Bearer " + getToken() }
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert("Data berhasil dihapus.");
+          loadList();
+        } else {
+          alert("Gagal menghapus: " + (data.message || "Unknown error"));
+        }
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    function editData(nomor) {
+      const reg = window.currentRows?.find(r => r.nomor_pendaftaran == nomor);
+      if (!reg) return;
+
+      el("editNomor").value = nomor;
+      el("editNama").value = reg.nama || "";
+      el("editJK").value = reg.jk === "L" ? "Laki-laki" : (reg.jk === "P" ? "Perempuan" : (reg.jk || "-"));
+      el("editPaket").value = reg.paket || "C";
+      el("editCatatan").value = reg.catatan || "";
+
+      // Show edit-request controls when student requested edit
+      const editReqRow = el('editRequestRow');
+      const editAllow = el('editAllowCheckbox');
+      if (editReqRow) {
+        if (reg.minta_izin_edit) {
+          editReqRow.style.display = 'block';
+          el('editAllowCheckbox').checked = false;
+          el('editRejectCheckbox').checked = false;
+        } else {
+          editReqRow.style.display = 'none';
+        }
+      }
+
+      el("modalEdit").style.display = "block";
+    }
+
+    el("formEdit").onsubmit = async (e) => {
+      e.preventDefault();
+      const nomor = el("editNomor").value;
+      const nama = el("editNama").value;
+      const paket = el("editPaket").value;
+      const catatan = el("editCatatan").value;
+      const editAllowed = el('editAllowCheckbox') ? !!el('editAllowCheckbox').checked : false;
+
+      if (!nomor) return;
+
+      const btn = e.target.querySelector("button[type=submit]");
+      const originalText = btn.textContent;
+      btn.textContent = "Menyimpan...";
+      btn.disabled = true;
+
+      try {
+        const payload = { nama, paket, catatan };
+        if (editAllowed) {
+          payload.edit_allowed = true;
+        } else if (el('editRejectCheckbox').checked) {
+          payload.minta_izin_edit = false;
+          payload.edit_allowed = false;
+        }
+
+        const res = await fetch(`${API_BASE}/api/admin/registrations/${nomor}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + getToken()
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert("Data berhasil diperbarui!");
+          el("modalEdit").style.display = "none";
+          loadList();
+        } else {
+          alert("Gagal update: " + data.message);
+        }
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    };
+
+    el("btnCloseEdit").onclick = () => {
+      el("modalEdit").style.display = "none";
+    };
+
+    // tombol dan event listeners
+    el("filterPaket").onchange = () => {
+      specialFilter = ""; // Reset if user manually picks a package
+      loadList();
+    };
+    el("q").oninput = () => {
+      // Optional: reset special filter if searching by name? 
+      // User might want to search within "Permintaan Edit", so we let it be.
+      // But typically search implies a broader context. Let's keep it for now.
+    };
+    el("btnApply").onclick = () => {
+      specialFilter = ""; // Reset special filter when manual filter applied
+      loadList();
+    };
+    el("btnDownloadExcel").onclick = downloadExcel;
+    el("navLogout").onclick = (e) => { e.preventDefault(); doLogout(); };
+
+    // Modal events
+    el("btnCloseModal").onclick = () => el("modalDetail").style.display = "none";
+    el("modalDetail").onclick = (e) => { if (e.target === el("modalDetail")) el("modalDetail").style.display = "none"; };
+
+    loadList();
+  </script>
+</body>
+
+</html>

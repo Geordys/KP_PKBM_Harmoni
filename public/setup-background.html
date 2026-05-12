@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Background Hero - PKBM Harmoni</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .step {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .step-number {
+            background: #2563eb;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-content h3 {
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        
+        .step-content p {
+            color: #64748b;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .code {
+            background: #f1f5f9;
+            border-left: 4px solid #2563eb;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+            font-size: 13px;
+            overflow-x: auto;
+            color: #0f172a;
+        }
+        
+        .docs {
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .docs h3 {
+            color: #0369a1;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .docs ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .docs li {
+            padding: 8px 0;
+            color: #0369a1;
+            font-size: 14px;
+        }
+        
+        .docs li a {
+            color: #0369a1;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px dotted #0369a1;
+        }
+        
+        .docs li a:hover {
+            border-bottom: 1px solid #0369a1;
+        }
+        
+        .success {
+            background: #ecfdf5;
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            color: #166534;
+        }
+        
+        .success h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .check {
+            color: #16a34a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Background Hero Setup</h1>
+            <p>Implementasi background foto sekolah pada hero section</p>
+        </div>
+        
+        <div class="content">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>📷 Siapkan Foto Sekolah</h3>
+                    <p>
+                        Ambil atau siapkan foto sekolah dengan:
+                    </p>
+                    <ul style="margin-top: 8px; color: #64748b; font-size: 14px;">
+                        <li>✓ Ukuran: minimal 1920x1080px (landscape)</li>
+                        <li>✓ Format: JPG atau PNG</li>
+                        <li>✓ File size: < 500KB (lebih baik)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>💾 Simpan Foto dengan Nama Tepat</h3>
+                    <p>Rename file menjadi:</p>
+                    <div class="code">hero-bg.jpg</div>
+                    <p style="margin-top: 10px;">Kemudian simpan di folder:</p>
+                    <div class="code">/public/assets/images/</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>🔄 Clear Cache & Refresh Browser</h3>
+                    <p>
+                        Tekan <strong>Ctrl+Shift+Delete</strong> untuk clear cache,
+                        kemudian tekan <strong>F5</strong> atau <strong>Ctrl+R</strong> untuk refresh.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="success">
+                <h3><span class="check">✅</span> Implementasi Selesai!</h3>
+                <p>
+                    Website siap menampilkan background foto sekolah dengan overlay yang 
+                    memastikan text tetap terbaca. Tampilan akan menjadi profesional seperti 
+                    website sekolah resmi.
+                </p>
+            </div>
+            
+            <div class="docs">
+                <h3>📚 Dokumentasi Lengkap</h3>
+                <p style="color: #64748b; margin-bottom: 15px;">
+                    Baca dokumentasi untuk informasi lebih detail:
+                </p>
+                <ul>
+                    <li>📄 <a href="../QUICK_START_BACKGROUND.txt">QUICK_START_BACKGROUND.txt</a> - Panduan 3 langkah cepat</li>
+                    <li>📄 <a href="../SETUP_BACKGROUND_HERO.md">SETUP_BACKGROUND_HERO.md</a> - Panduan lengkap & troubleshooting</li>
+                    <li>📄 <a href="../VISUAL_GUIDE_BACKGROUND.txt">VISUAL_GUIDE_BACKGROUND.txt</a> - Diagram & penjelasan teknis</li>
+                    <li>📄 <a href="../CHECKLIST_BACKGROUND_SETUP.txt">CHECKLIST_BACKGROUND_SETUP.txt</a> - Verifikasi setup</li>
+                    <li>📄 <a href="../IMPLEMENTATION_SUMMARY.md">IMPLEMENTATION_SUMMARY.md</a> - Detail implementasi</li>
+                    <li>📄 <a href="../DOKUMENTASI_INDEX.txt">DOKUMENTASI_INDEX.txt</a> - Index semua dokumen</li>
+                    <li>📄 <a href="hero-background-examples.css">hero-background-examples.css</a> - 6 opsi overlay</li>
+                    <li>📄 <a href="hero-background-advanced.css">hero-background-advanced.css</a> - 10 variasi advanced</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Setup Background Hero Section • PKBM Harmoni • 29 Januari 2026</p>
+        </div>
+    </div>
+</body>
+</html>

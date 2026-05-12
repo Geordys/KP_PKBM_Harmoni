@@ -1,0 +1,259 @@
+/*
+  BONUS: Advanced Background Variations
+  File ini berisi variasi-variasi background yang lebih advanced
+  untuk hero section
+*/
+
+/* ============================================
+   VARIATION 1: Parallax Effect (sudah aktif)
+   ============================================ */
+/*
+.hero {
+  background-attachment: fixed;  ← Parallax effect
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url('/assets/images/hero-bg.jpg');
+}
+*/
+
+
+/* ============================================
+   VARIATION 2: Multiple Background Layers
+   ============================================ */
+.hero.multi-layer {
+  background: 
+    linear-gradient(135deg, rgba(246,248,252,0.9) 0%, rgba(255,255,255,0.85) 100%),
+    url('/assets/images/hero-bg.jpg') center/cover fixed;
+}
+
+
+/* ============================================
+   VARIATION 3: Animated Gradient Background
+   ============================================ */
+.hero.animated-gradient {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
+/* ============================================
+   VARIATION 4: Blur Background
+   ============================================ */
+.hero.blur-bg {
+  background-image: url('/assets/images/hero-bg.jpg');
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  backdrop-filter: blur(8px);
+}
+
+
+/* ============================================
+   VARIATION 5: Sepia/Vintage Effect
+   ============================================ */
+.hero.sepia-effect {
+  background-image: url('/assets/images/hero-bg.jpg');
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: sepia(50%);
+}
+
+.hero.sepia-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(200,180,150,0.8) 0%, rgba(220,200,180,0.7) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+
+/* ============================================
+   VARIATION 6: Grayscale with Accent
+   ============================================ */
+.hero.grayscale-accent {
+  background-image: url('/assets/images/hero-bg.jpg');
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: grayscale(80%);
+}
+
+.hero.grayscale-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(37,99,235,0.4) 0%, rgba(37,99,235,0.2) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+
+/* ============================================
+   VARIATION 7: Vignette Effect
+   ============================================ */
+.hero.vignette {
+  background-image: url('/assets/images/hero-bg.jpg');
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: inset 0 0 120px rgba(0,0,0,0.5);
+}
+
+.hero.vignette::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+
+/* ============================================
+   VARIATION 8: Duotone Effect
+   ============================================ */
+.hero.duotone {
+  background-image: url('/assets/images/hero-bg.jpg');
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: saturate(0.8) hue-rotate(45deg);
+}
+
+.hero.duotone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,100,50,0.6) 0%, rgba(50,100,255,0.6) 100%);
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: multiply;
+}
+
+
+/* ============================================
+   VARIATION 9: School Brand Colors
+   Customize dengan warna sekolah Anda
+   ============================================ */
+.hero.brand-primary {
+  background: linear-gradient(135deg, #c01919 0%, #8b1313 100%);
+  background-attachment: fixed;
+}
+
+.hero.brand-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/assets/images/hero-bg.jpg');
+  opacity: 0.3;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  pointer-events: none;
+  z-index: 1;
+}
+
+
+/* ============================================
+   VARIATION 10: Glass Morphism Style
+   ============================================ */
+.hero.glass-morph {
+  background-image: url('/assets/images/hero-bg.jpg');
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.hero.glass-morph::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero.glass-morph .hero-card {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+
+/* ============================================
+   RESPONSIVE: Adjust untuk mobile
+   ============================================ */
+@media (max-width: 768px) {
+  .hero {
+    background-attachment: scroll;  /* Parallax tidak cocok di mobile */
+  }
+  
+  .hero.sepia-effect {
+    filter: sepia(30%);  /* Reduce effect on mobile */
+  }
+  
+  .hero.grayscale-accent {
+    filter: grayscale(60%);  /* Reduce effect on mobile */
+  }
+}
+
+
+/* ============================================
+   CARA PENGGUNAAN:
+   
+   1. Pilih salah satu variation dari atas
+   
+   2. Copy class name (contoh: "blur-bg", "animated-gradient")
+   
+   3. Di HTML beranda_siswa.html, ubah:
+      <div class="hero" id="home">
+      
+      Menjadi:
+      <div class="hero blur-bg" id="home">
+      atau
+      <div class="hero animated-gradient" id="home">
+      
+   4. Simpan dan refresh browser
+   
+   ============================================ */

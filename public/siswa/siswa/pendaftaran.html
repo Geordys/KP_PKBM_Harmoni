@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Form Pendaftaran - PKBM Harmoni</title>
+  <link rel="stylesheet" href="../../assets/css/siswa-pendaftaran.css">
+  <style>
+ 
+    header.topbar {
+      display: none !important;
+    }
+
+    main.page {
+      margin-top: 0;
+      padding-top: 18px;
+    }
+
+    .head-actions #backToHomeBtn {
+      padding: 8px 14px;
+    }
+  </style>
+  <script>
+
+    (function () {
+      try {
+        let foundStatus = null;
+        let foundData = null;
+
+        const userRaw = localStorage.getItem('currentUser');
+        if (userRaw) {
+          const user = JSON.parse(userRaw);
+          let suffix = '';
+          if (user.id) suffix += `_id${user.id}`;
+          if (user.email) suffix += `_em${user.email.replace(/[^a-zA-Z0-9]/g, '')}`;
+          const targetKey = `registration_data_pkbm_harmoni_v1${suffix}`;
+          const v = JSON.parse(localStorage.getItem(targetKey) || 'null');
+
+          if (v && v.status) {
+            const s = String(v.status).toUpperCase();
+            if (['MENUNGGU', 'DIVERIFIKASI', 'DITERIMA'].includes(s)) {
+              foundStatus = s;
+              foundData = v;
+              window.PRELOADED_REG = v;
+            }
+          }
+        }
+
+        if (foundStatus) {
+          console.log('[Preloader] Found status:', foundStatus);
+
+          let activeIdx = 0;
+          if (foundStatus === 'MENUNGGU') activeIdx = 2; 
+          else if (foundStatus === 'DIVERIFIKASI') activeIdx = 3; 
+          else if (foundStatus === 'DITERIMA') activeIdx = 4; 
+
+          const style = document.createElement('style');
+          style.id = 'preloaderHideStyle';
+          style.innerHTML = `
+            .section { display: none !important; }
+            .section[data-step="${activeIdx}"] { display: block !important; }
+            .step { pointer-events: none !important; opacity: 0.6; }
+            .step[data-step="${activeIdx}"] { opacity: 1 !important; border-bottom: 3px solid var(--primary) !important; }
+          `;
+          document.head.appendChild(style);
+
+          window.PRELOADED_STEP = activeIdx;
+
+          if (foundStatus === 'DITERIMA' && foundData) {
+            document.addEventListener('DOMContentLoaded', function () {
+              const acceptedTimeEl = document.getElementById("acceptedTime");
+              const studentNisEl = document.getElementById("studentNIS");
+
+              if (acceptedTimeEl) {
+                let displayTime = "-";
+                const rawTime = foundData.accepted_at || foundData.verified_at || foundData.updated_at || foundData.created_at;
+                if (rawTime) {
+                  try {
+                    let s = rawTime;
+                    if (s.indexOf("Z") === -1 && s.indexOf("+") === -1) s = s.replace(" ", "T") + "Z";
+                    const dateObj = new Date(s);
+                    displayTime = dateObj.toLocaleString("id-ID", {
+                      year: "numeric", month: "long", day: "numeric",
+                      hour: "2-digit", minute: "2-digit", second: "2-digit",
+                      timeZone: "Asia/Jakarta", hour12: false
+                    }).replace(/\./g, ':') + ' WIB';
+                  } catch (e) { displayTime = rawTime; }
+                }
+                acceptedTimeEl.textContent = displayTime;
+              }
+
+            });
+          }
+        }
+      } catch (e) { console.error('Preloader error', e); }
+    })();
+  </script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="nav-wrap">
+        <div class="brand">
+          <img src="../../assets/logo-pkbm.png" alt="Logo PKBM Harmoni">
+          <div>
+            <div class="t1">PKBM Harmoni</div>
+            <div class="t2">Form Pendaftaran</div>
+            <div class="t3">Paket B (SMP) & Paket C (SMA)</div>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a href="beranda_siswa.html#home">Home</a>
+          <a href="beranda_siswa.html#program">Program</a>
+          <a href="beranda_siswa.html#alur">Alur</a>
+          <a href="beranda_siswa.html#syarat">Syarat</a>
+          <a href="beranda_siswa.html#kontak">Kontak</a>
+          <a href="pendaftaran.html?mode=cek_status" id="navCekStatus" style="display:none">Cek Status</a>
+        </nav>
+
+        <div class="nav-right">
+          <a class="btn ghost" id="linkHome" href="beranda_siswa.html">Kembali</a>
+          <button class="icon-btn" id="btnHelp" title="Bantuan cepat" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4" />
+              <path d="M12 17h.01" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="container">
+      <div class="head-card">
+        <div class="head-title">
+          <h1>Pendaftaran Calon Siswa PKBM Harmoni</h1>
+          <p>Isi data dengan benar sesuai dokumen. Jika ada kolom yang belum punya datanya, kamu bisa isi “-” dulu, tapi
+            untuk kolom bertanda <b style="color:var(--danger)">Wajib*</b> mohon diisi.</p>
+        </div>
+        <div class="head-actions">
+          <button id="backToHomeBtn" class="btn primary" type="button"
+            style="padding:8px 14px; background-color:#ef4444; border-color:#ef4444; color:white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);">Keluar</button>
+        </div>
+      </div>
+
+      <!-- Modal Konfirmasi Edit -->
+      <div id="confirmExitModal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:9999;">
+        <div role="dialog" aria-modal="true" aria-labelledby="confirmExitTitle"
+          style="background:#fff; max-width:480px; width:92%; padding:20px; border-radius:12px; box-shadow:0 8px 30px rgba(2,6,23,0.2);">
+          <h3 id="confirmExitTitle" style="margin-top:0;">Yakin ingin keluar?</h3>
+          <p style="color:#334155;">Jika Anda keluar sekarang, perubahan yang belum disimpan mungkin hilang. Apakah Anda
+            yakin ingin kembali ke beranda?</p>
+          <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:18px;">
+            <button id="cancelExitBtn" class="btn ghost" type="button">Batal</button>
+            <button id="confirmExitBtn" class="btn primary" type="button">Ya, Keluar</button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          const backBtn = document.getElementById('backToHomeBtn');
+          const headerBackLink = document.getElementById('linkHome');
+          const modal = document.getElementById('confirmExitModal');
+          const cancelBtn = document.getElementById('cancelExitBtn');
+          const confirmBtn = document.getElementById('confirmExitBtn');
+
+          function openExitModal(e) {
+            if (e) e.preventDefault();
+            modal.style.display = 'flex';
+
+            confirmBtn.focus();
+          }
+
+          function closeExitModal() {
+            modal.style.display = 'none';
+          }
+
+          backBtn?.addEventListener('click', openExitModal);
+          headerBackLink?.addEventListener('click', function (e) {
+
+            openExitModal(e);
+          });
+
+          cancelBtn?.addEventListener('click', closeExitModal);
+
+          confirmBtn?.addEventListener('click', function () {
+            // Navigasi ke beranda
+            window.location.href = 'beranda_siswa.html';
+          });
+
+          // Peringatkan pengguna jika mencoba menutup tab / pindah halaman (dialog browser dasar)
+          let formTouched = false;
+          // Tandai 'terubah' saat ada input yang berubah
+          document.addEventListener('input', function () { formTouched = true; }, { capture: true });
+
+          window.addEventListener('beforeunload', function (e) {
+            if (!formTouched) return undefined;
+            const confirmationMessage = 'Perubahan Anda mungkin hilang jika Anda meninggalkan halaman ini.';
+            (e || window.event).returnValue = confirmationMessage;
+            return confirmationMessage;
+          });
+        })();
+      </script>
+
+      <div class="form-wrap">
+        <!-- View Tidak Register -->
+        <div id="notRegisteredView" style="display: none; text-align: center; padding: 60px 20px;">
+          <div style="margin-bottom: 20px; color: #cbd5e1;">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+          </div>
+          <h3 style="margin-bottom: 12px; color: #334155; font-size: 1.5rem;">Belum Ada Pendaftaran</h3>
+          <p
+            style="color: #64748b; margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+            Kami tidak menemukan data pendaftaran aktif untuk akun Anda.<br>
+            Silakan mulai pendaftaran baru untuk bergabung dengan PKBM Harmoni.
+          </p>
+          <button class="btn primary" onclick="goToRegistration()" style="padding: 12px 32px; font-size: 1.1rem;">
+            Mulai Pendaftaran Baru
+          </button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress" id="progressWrap">
+          <div class="steps" id="steps">
+            <div class="step active" data-step="0">
+              <div class="num">1</div>
+              <div><b>Isi Formulir</b><small>Pendaftaran siswa baru</small></div>
+            </div>
+            <div class="step" data-step="1">
+              <div class="num">2</div>
+              <div><b>Review Data</b><small>Periksa dan konfirmasi data</small></div>
+            </div>
+            <div class="step" data-step="2">
+              <div class="num">3</div>
+              <div><b>Menunggu</b><small>Verifikasi admin</small></div>
+            </div>
+            <div class="step" data-step="3">
+              <div class="num">4</div>
+              <div><b>Diverifikasi</b><small>Data telah dicek</small></div>
+            </div>
+            <div class="step" data-step="4">
+              <div class="num">5</div>
+              <div><b>Diterima</b><small>Selamat bergabung!</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="body" id="bodyWrap">
+          <div class="alert" id="alert"></div>
+
+          <!-- STEP 0: ISI FORMULIR -->
+          <div class="section active" data-step="0">
+            <h3>Formulir Pendaftaran Siswa Baru</h3>
+            <p>Silakan isi semua data dengan benar dan lengkap.</p>
+
+            <!-- Data Diri -->
+            <div class="form-section">
+              <h4>Data Diri</h4>
+              <div class="grid2">
+                <div class="field">
+                  <label for="nama">Nama Lengkap <span class="req">*</span></label>
+                  <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
+                </div>
+                <div class="field">
+                  <label for="jk">Jenis Kelamin <span class="req">*</span></label>
+                  <select id="jk" name="jk" required>
+                    <option value="">Pilih jenis kelamin</option>
+                    <option value="L">Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="tempat_lahir">Tempat Lahir <span class="req">*</span></label>
+                  <input type="text" id="tempat_lahir" name="tempat_lahir" placeholder="Masukkan tempat lahir" required>
+                </div>
+                <div class="field">
+                  <label for="tanggal_lahir">Tanggal Lahir <span class="req">*</span></label>
+                  <input type="date" id="tanggal_lahir" name="tanggal_lahir" required>
+                </div>
+                <div class="field">
+                  <label for="agama">Agama <span class="req">*</span></label>
+                  <select id="agama" name="agama" required>
+                    <option value="">Pilih agama</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Kristen">Kristen</option>
+                    <option value="Katolik">Katolik</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Buddha">Buddha</option>
+                    <option value="Konghucu">Konghucu</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="paket">Paket yang Dipilih <span class="req">*</span></label>
+                  <select id="paket" name="paket" required>
+                    <option value="">Pilih paket</option>
+                    <option value="B">Paket B (Setara SMP)</option>
+                    <option value="C">Paket C (Setara SMA)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="nisn">NISN</label>
+                  <input type="text" id="nisn" name="nisn" placeholder="Masukkan NISN (jika ada)">
+                </div>
+                <div class="field">
+                  <label for="nik">NIK (Siswa) <span class="req">*</span></label>
+                  <input type="text" id="nik" name="nik" placeholder="Masukkan NIK" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alamat -->
+            <div class="form-section">
+              <h4>Alamat Lengkap</h4>
+              <div class="grid2">
+                <div class="field span-12">
+                  <label for="alamat">Alamat <span class="req">*</span></label>
+                  <textarea id="alamat" name="alamat" placeholder="Masukkan alamat lengkap" required></textarea>
+                </div>
+                <div class="field">
+                  <label for="rt">RT</label>
+                  <input type="text" id="rt" name="rt" placeholder="RT">
+                </div>
+                <div class="field">
+                  <label for="rw">RW</label>
+                  <input type="text" id="rw" name="rw" placeholder="RW">
+                </div>
+                <div class="field">
+                  <label for="dusun">Dusun</label>
+                  <input type="text" id="dusun" name="dusun" placeholder="Dusun">
+                </div>
+                <div class="field">
+                  <label for="desa">Kelurahan/Desa <span class="req">*</span></label>
+                  <input type="text" id="desa" name="desa" placeholder="Kelurahan/Desa" required>
+                </div>
+                <div class="field">
+                  <label for="kecamatan">Kecamatan <span class="req">*</span></label>
+                  <input type="text" id="kecamatan" name="kecamatan" placeholder="Kecamatan" required>
+                </div>
+                <div class="field">
+                  <label for="kode_pos">Kode Pos</label>
+                  <input type="text" id="kode_pos" name="kode_pos" placeholder="Kode Pos">
+                </div>
+                <div class="field">
+                  <label for="jenis_tinggal">Jenis Tinggal</label>
+                  <select id="jenis_tinggal" name="jenis_tinggal">
+                    <option value="">Pilih jenis tinggal</option>
+                    <option value="Bersama orang tua">Bersama orang tua</option>
+                    <option value="Wali">Wali</option>
+                    <option value="Kos">Kos</option>
+                    <option value="Asrama">Asrama</option>
+                    <option value="Panti asuhan">Panti asuhan</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="alat_transportasi">Alat Transportasi</label>
+                  <select id="alat_transportasi" name="alat_transportasi">
+                    <option value="">Pilih alat transportasi</option>
+                    <option value="Jalan kaki">Jalan kaki</option>
+                    <option value="Sepeda">Sepeda</option>
+                    <option value="Sepeda motor">Sepeda motor</option>
+                    <option value="Mobil pribadi">Mobil pribadi</option>
+                    <option value="Angkutan umum">Angkutan umum</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="jenis_bank">Jenis Bank</label>
+                  <select id="jenis_bank" name="jenis_bank">
+                    <option value="">Pilih jenis bank</option>
+                    <option value="BRI">BRI</option>
+                    <option value="BCA">BCA</option>
+                    <option value="Mandiri">Mandiri</option>
+                    <option value="BNI">BNI</option>
+                    <option value="CIMB Niaga">CIMB Niaga</option>
+                    <option value="Danamon">Danamon</option>
+                    <option value="Permata">Permata</option>
+                    <option value="BSI">BSI</option>
+                    <option value="BTN">BTN</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="no_rekening">No. Rekening</label>
+                  <input type="text" id="no_rekening" name="no_rekening" placeholder="Masukkan nomor rekening">
+                </div>
+                <div class="field">
+                  <label for="telepon">Telepon</label>
+                  <input type="tel" id="telepon" name="telepon" placeholder="Nomor telepon rumah">
+                </div>
+                <div class="field">
+                  <label for="hp">HP/WhatsApp <span class="req">*</span></label>
+                  <input type="tel" id="hp" name="hp" placeholder="Masukkan nomor HP/WhatsApp" required>
+                </div>
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" placeholder="Masukkan alamat email">
+                </div>
+              </div>
+            </div>
+
+            <!-- Sekolah & Bantuan -->
+            <div class="form-section">
+              <h4>Sekolah Asal & Bantuan</h4>
+              <div class="grid2">
+                <div class="field">
+                  <label for="sekolah_asal">Sekolah Asal <span class="req">*</span></label>
+                  <input type="text" id="sekolah_asal" name="sekolah_asal" placeholder="Nama sekolah asal" required>
+                </div>
+                <div class="field">
+                  <label for="skhun">SKHUN</label>
+                  <input type="text" id="skhun" name="skhun" placeholder="Nomor SKHUN">
+                </div>
+                <div class="field">
+                  <label>Penerima KPS/KIP/PKH?</label>
+                  <div class="radio-row">
+                    <label><input type="radio" name="penerima_kps" value="Ya"> Ya</label>
+                    <label><input type="radio" name="penerima_kps" value="Tidak" checked> Tidak</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Orang Tua -->
+            <div class="form-section">
+              <h4>Data Orang Tua</h4>
+              <h5>Ayah</h5>
+              <div class="grid2">
+                <div class="field">
+                  <label for="nama_ayah">Nama</label>
+                  <input type="text" id="nama_ayah" name="nama_ayah" placeholder="Nama lengkap ayah">
+                </div>
+                <div class="field">
+                  <label for="tanggal_lahir_ayah">Tahun Lahir</label>
+                  <input type="number" id="tanggal_lahir_ayah" name="tanggal_lahir_ayah" placeholder="Tahun Lahir"
+                    min="1900" max="2030">
+                </div>
+                <div class="field">
+                  <label for="nik_ayah">NIK</label>
+                  <input type="text" id="nik_ayah" name="nik_ayah" placeholder="NIK ayah">
+                </div>
+                <div class="field">
+                  <label for="pendidikan_ayah">Jenjang Pendidikan</label>
+                  <select id="pendidikan_ayah" name="pendidikan_ayah">
+                    <option value="">Pilih pendidikan</option>
+                    <option value="Tidak sekolah">Tidak sekolah</option>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                    <option value="SMA">SMA</option>
+                    <option value="D1">D1</option>
+                    <option value="D2">D2</option>
+                    <option value="D3">D3</option>
+                    <option value="S1">S1</option>
+                    <option value="S2">S2</option>
+                    <option value="S3">S3</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="pekerjaan_ayah">Pekerjaan</label>
+                  <input type="text" id="pekerjaan_ayah" name="pekerjaan_ayah" placeholder="Pekerjaan ayah">
+                </div>
+                <div class="field">
+                  <label for="penghasilan_ayah">Penghasilan</label>
+                  <select id="penghasilan_ayah" name="penghasilan_ayah">
+                    <option value="">Pilih penghasilan</option>
+                    <option value="<500000">&lt; Rp 500.000</option>
+                    <option value="500000-1000000">Rp 500.000 - Rp 1.000.000</option>
+                    <option value="1000000-2000000">Rp 1.000.000 - Rp 2.000.000</option>
+                    <option value="2000000-5000000">Rp 2.000.000 - Rp 5.000.000</option>
+                    <option value=">5000000">&gt; Rp 5.000.000</option>
+                  </select>
+                </div>
+              </div>
+              <h5>Ibu</h5>
+              <div class="grid2">
+                <div class="field">
+                  <label for="nama_ibu">Nama</label>
+                  <input type="text" id="nama_ibu" name="nama_ibu" placeholder="Nama lengkap ibu">
+                </div>
+                <div class="field">
+                  <label for="tanggal_lahir_ibu">Tahun Lahir</label>
+                  <input type="number" id="tanggal_lahir_ibu" name="tanggal_lahir_ibu" placeholder="Tahun Lahir"
+                    min="1900" max="2030">
+                </div>
+                <div class="field">
+                  <label for="nik_ibu">NIK</label>
+                  <input type="text" id="nik_ibu" name="nik_ibu" placeholder="NIK ibu">
+                </div>
+                <div class="field">
+                  <label for="pendidikan_ibu">Jenjang Pendidikan</label>
+                  <select id="pendidikan_ibu" name="pendidikan_ibu">
+                    <option value="">Pilih pendidikan</option>
+                    <option value="Tidak sekolah">Tidak sekolah</option>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                    <option value="SMA">SMA</option>
+                    <option value="D1">D1</option>
+                    <option value="D2">D2</option>
+                    <option value="D3">D3</option>
+                    <option value="S1">S1</option>
+                    <option value="S2">S2</option>
+                    <option value="S3">S3</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="pekerjaan_ibu">Pekerjaan</label>
+                  <input type="text" id="pekerjaan_ibu" name="pekerjaan_ibu" placeholder="Pekerjaan ibu">
+                </div>
+                <div class="field">
+                  <label for="penghasilan_ibu">Penghasilan</label>
+                  <select id="penghasilan_ibu" name="penghasilan_ibu">
+                    <option value="">Pilih penghasilan</option>
+                    <option value="<500000">&lt; Rp 500.000</option>
+                    <option value="500000-1000000">Rp 500.000 - Rp 1.000.000</option>
+                    <option value="1000000-2000000">Rp 1.000.000 - Rp 2.000.000</option>
+                    <option value="2000000-5000000">Rp 2.000.000 - Rp 5.000.000</option>
+                    <option value=">5000000">&gt; Rp 5.000.000</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Review & Agreement -->
+            <div class="form-section">
+              <h4>Konfirmasi Data</h4>
+
+              <div class="field">
+                <label>
+                  <input type="checkbox" id="agree" name="agree" required>
+                  Saya menyatakan bahwa data yang saya isi adalah benar dan saya bertanggung jawab atas kebenarannya.
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Konfirmasi Data -->
+          <div class="section" data-step="1">
+            <h3>Review Data Pendaftaran</h3>
+            <p>Periksa kembali data yang telah Anda isi. Jika ada yang salah, klik "Kembali Edit" untuk kembali ke
+              formulir.</p>
+
+            <div class="review-summary" id="reviewSummary">
+              <!-- Data Diri -->
+              <div class="review-section">
+                <h4>Data Diri</h4>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">Nama Lengkap</span>
+                    <span class="review-value" id="review-nama">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Jenis Kelamin</span>
+                    <span class="review-value" id="review-jk">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">NIK</span>
+                    <span class="review-value" id="review-nik">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">NISN</span>
+                    <span class="review-value" id="review-nisn">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Tempat Lahir</span>
+                    <span class="review-value" id="review-tempatLahir">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Tanggal Lahir</span>
+                    <span class="review-value" id="review-tglLahir">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Agama</span>
+                    <span class="review-value" id="review-agama">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Paket</span>
+                    <span class="review-value" id="review-paket">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Alamat Lengkap -->
+              <div class="review-section">
+                <h4>Alamat Lengkap</h4>
+                <div class="review-grid">
+                  <div class="review-item span-full">
+                    <span class="review-label">Alamat</span>
+                    <span class="review-value" id="review-alamat">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">RT</span>
+                    <span class="review-value" id="review-rt">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">RW</span>
+                    <span class="review-value" id="review-rw">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Dusun</span>
+                    <span class="review-value" id="review-dusun">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Kelurahan/Desa</span>
+                    <span class="review-value" id="review-desa">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Kecamatan</span>
+                    <span class="review-value" id="review-kecamatan">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Kode Pos</span>
+                    <span class="review-value" id="review-kodePos">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Jenis Tinggal</span>
+                    <span class="review-value" id="review-jenisTinggal">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Alat Transportasi</span>
+                    <span class="review-value" id="review-alatTransportasi">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Kontak & Bank -->
+              <div class="review-section">
+                <h4>Kontak & Bank</h4>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">HP/WhatsApp</span>
+                    <span class="review-value" id="review-hp">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Telepon</span>
+                    <span class="review-value" id="review-telepon">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Email</span>
+                    <span class="review-value" id="review-email">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Jenis Bank</span>
+                    <span class="review-value" id="review-jenisBank">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">No. Rekening</span>
+                    <span class="review-value" id="review-noRekening">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Data Sekolah -->
+              <div class="review-section">
+                <h4>Data Sekolah & Bantuan</h4>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">Paket</span>
+                    <span class="review-value" id="review-paketSekolah">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Sekolah Asal</span>
+                    <span class="review-value" id="review-asalSekolah">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">NISN</span>
+                    <span class="review-value" id="review-nisnSekolah">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">SKHUN</span>
+                    <span class="review-value" id="review-skhun">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Penerima KPS/KIP/PKH</span>
+                    <span class="review-value" id="review-penerimaKps">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Data Orang Tua - Ayah -->
+              <div class="review-section">
+                <h4>Data Orang Tua - Ayah</h4>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">Nama Ayah</span>
+                    <span class="review-value" id="review-namaAyah">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Tahun Lahir</span>
+                    <span class="review-value" id="review-tahunLahirAyah">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">NIK Ayah</span>
+                    <span class="review-value" id="review-nikAyah">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Pendidikan</span>
+                    <span class="review-value" id="review-pendidikanAyah">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Pekerjaan</span>
+                    <span class="review-value" id="review-pekerjaanAyah">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Penghasilan</span>
+                    <span class="review-value" id="review-penghasilanAyah">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Data Orang Tua - Ibu -->
+              <div class="review-section">
+                <h4>Data Orang Tua - Ibu</h4>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">Nama Ibu</span>
+                    <span class="review-value" id="review-namaIbu">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Tahun Lahir</span>
+                    <span class="review-value" id="review-tahunLahirIbu">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">NIK Ibu</span>
+                    <span class="review-value" id="review-nikIbu">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Pendidikan</span>
+                    <span class="review-value" id="review-pendidikanIbu">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Pekerjaan</span>
+                    <span class="review-value" id="review-pekerjaanIbu">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Penghasilan</span>
+                    <span class="review-value" id="review-penghasilanIbu">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" data-step="2">
+            <div class="status-card waiting">
+              <div class="status-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12,6 12,12 16,14"></polyline>
+                </svg>
+              </div>
+              <h3>Menunggu Verifikasi</h3>
+              <p>Pendaftaran Anda telah berhasil dikirim dan sedang menunggu verifikasi dari admin PKBM Harmoni.</p>
+              <div class="status-info">
+                <p><strong>Status:</strong> <span class="status-badge waiting">MENUNGGU</span></p>
+                <p><strong>Waktu Submit:</strong> <span id="submitTime">-</span></p>
+                <p><strong>Estimasi Proses:</strong> 1-3 hari kerja</p>
+
+                <!-- Catatan Admin -->
+                <div id="adminNoteWrap" class="hidden" role="status" aria-live="polite"
+                  style="margin-top:12px; padding:12px; background:#fff6f6; border:1px solid #fee2e2; border-radius:8px;">
+                  <h4 style="margin:0 0 8px 0; color:#b91c1c;">Catatan dari Admin</h4>
+                  <p id="adminNoteContent" style="margin:0 0 8px 0; color:#7f1d1d;">-</p>
+                </div>
+
+
+              </div>
+              <div class="status-actions">
+                <button class="btn primary" onclick="window.location.href='beranda_siswa.html'">Kembali ke
+                  Beranda</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" data-step="3">
+            <div class="status-card verified">
+              <div class="status-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                </svg>
+              </div>
+              <h3>Data Telah Diverifikasi</h3>
+              <p>Selamat! Data pendaftaran Anda telah diverifikasi oleh admin dan dinyatakan lengkap.</p>
+              <div class="status-info">
+                <p><strong>Status:</strong> <span class="status-badge verified">DIVERIFIKASI</span></p>
+                <p><strong>Waktu Verifikasi:</strong> <span id="verifiedTime">-</span></p>
+                <p><strong>Admin:</strong> <span id="verifiedBy">-</span></p>
+              </div>
+              <div class="status-actions">
+                <button class="btn primary" onclick="window.location.href='beranda_siswa.html'">Kembali ke
+                  Beranda</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" data-step="4">
+            <div class="status-card accepted">
+              <div class="status-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                </svg>
+              </div>
+              <h3>Selamat Diterima!</h3>
+              <p>Selamat! Anda telah diterima sebagai siswa PKBM Harmoni. Selamat bergabung dengan kami!</p>
+              <div class="status-info">
+                <p><strong>Status:</strong> <span class="status-badge accepted">DITERIMA</span></p>
+                <p><strong>Waktu Penerimaan:</strong> <span id="acceptedTime">-</span></p>
+              </div>
+              <div class="status-actions">
+                <button class="btn primary blue" onclick="downloadAcceptanceLetter()">Unduh Surat</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Periksa Kembali -->
+          <div class="actions">
+            <div class="left">
+              <button class="btn ghost" id="btnEditKembali" type="button" style="display:none;margin-right:8px">Kembali
+                Edit</button>
+              <button class="btn primary" id="btnSubmitReview" type="button"
+                style="display:none;margin-left:8px">Submit</button>
+            </div>
+            <div class="right">
+              <button type="button" id="btnCheckAgain" class="btn ghost" style="display:none">Periksa Kembali</button>
+              <button type="button" id="btnSaveData" class="btn primary">Simpan Data</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Bantuan Pendaftaran -->
+  <div class="modal" id="modalHelp" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <b>Bantuan Pendaftaran</b>
+        <button class="icon-btn" onclick="document.getElementById('modalHelp').classList.remove('show')" title="Tutup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Jika Anda mengalami kesulitan, silakan hubungi admin melalui WhatsApp atau email yang tertera di halaman
+          kontak.</p>
+        <p>Pastikan data yang Anda masukkan sesuai dengan dokumen asli (KK/KTP/Ijazah).</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn primary"
+          onclick="document.getElementById('modalHelp').classList.remove('show')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalCheckAgain" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <b>Periksa Kembali</b>
+        <button class="icon-btn" id="closeCheckAgain" title="Tutup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        Apakah Anda yakin ingin kembali mengedit data? Pastikan Anda menyimpan perubahan setelah selesai mengedit.
+      </div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="btnCancelCheck">Batal</button>
+        <button class="btn primary" id="btnYesCheck">Ya, Edit Data</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalSaveConfirm" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <b>Konfirmasi</b>
+        <button class="icon-btn" id="closeSaveConfirm" title="Tutup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        Formulir sudah diisi dan akan lanjut ke review data.
+      </div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="btnCancelSave">Batal, Periksa Kembali</button>
+        <button class="btn primary" id="btnConfirmSave">Lanjut ke Review Data</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modalConfirm" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <b>Konfirmasi Submit</b>
+        <button class="icon-btn" id="closeConfirm" title="Tutup" type="button" aria-label="Tutup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">Apakah Anda yakin ingin mengirim pendaftaran? Setelah dikirim, data akan masuk ke proses
+        verifikasi admin.</div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="btnCancelSubmit" type="button">Batal</button>
+        <button class="btn primary" id="btnYesSubmit" type="button">Ya, kirim</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="../../assets/js/siswa-pendaftaran.js"></script>
+
+</body>
+
+</html>
