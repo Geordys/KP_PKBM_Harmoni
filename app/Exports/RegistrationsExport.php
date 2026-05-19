@@ -10,8 +10,14 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 
-class RegistrationsExport implements FromCollection, WithHeadings, WithStyles
+class RegistrationsExport extends DefaultValueBinder implements FromCollection, WithHeadings, WithStyles, WithColumnFormatting, WithCustomValueBinder
 {
     protected $data;
 
@@ -123,5 +129,24 @@ class RegistrationsExport implements FromCollection, WithHeadings, WithStyles
         }
 
         return [];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'F' => NumberFormat::FORMAT_TEXT, // NISN
+            'G' => NumberFormat::FORMAT_TEXT, // NIK
+        ];
+    }
+
+    public function bindValue(Cell $cell, $value)
+    {
+        // Memaksa kolom NISN (F) dan NIK (G) menjadi string eksplisit agar tidak berubah jadi scientific notation
+        if (in_array($cell->getColumn(), ['F', 'G'])) {
+            $cell->setValueExplicit($value, DataType::TYPE_STRING);
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 }

@@ -100,53 +100,37 @@
                 if (foundStatus) {
                     console.log('[Preloader] Found status:', foundStatus);
 
-                    const editAllowed = foundData && (foundData.edit_allowed == 1 || foundData.edit_allowed === true);
+                    const editAllowed = foundData && (foundData.edit_allowed == 1 || foundData.edit_allowed === true || foundData.edit_allowed === "1");
 
                     let activeIdx = 0;
                     if (editAllowed) {
                         activeIdx = 0;
                     } else {
-                        if (foundStatus === 'MENUNGGU') activeIdx = 2;
-                        else if (foundStatus === 'DIVERIFIKASI') activeIdx = 3;
+                        if (foundStatus === 'MENUNGGU' || foundStatus === 'PENDING') activeIdx = 2;
+                        else if (foundStatus === 'DIVERIFIKASI' || foundStatus === 'VERIFIKASI') activeIdx = 3;
                         else if (foundStatus === 'DITERIMA') activeIdx = 4;
                     }
 
                     const style = document.createElement('style');
                     style.id = 'preloaderHideStyle';
                     style.innerHTML = `
-                .section { display: none !important; }
-                .section[data-step="${activeIdx}"] { display: block !important; }
-                .step { pointer-events: none !important; opacity: 0.6; }
-                .step[data-step="${activeIdx}"] { opacity: 1 !important; border-bottom: 3px solid var(--primary) !important; }
-              `;
+                        .section { display: none !important; }
+                        .section[data-step="${activeIdx}"] { display: block !important; }
+                        .step { pointer-events: none !important; opacity: 0.6; }
+                        .step[data-step="${activeIdx}"] { opacity: 1 !important; border-bottom: 3px solid var(--primary) !important; }
+                    `;
                     document.head.appendChild(style);
-
                     window.PRELOADED_STEP = activeIdx;
-
-                    if (foundStatus === 'DITERIMA' && foundData) {
-                        document.addEventListener('DOMContentLoaded', function () {
-                            const acceptedTimeEl = document.getElementById("acceptedTime");
-                            if (acceptedTimeEl) {
-                                let displayTime = "-";
-                                const rawTime = foundData.accepted_at || foundData.verified_at || foundData.updated_at || foundData.created_at;
-                                if (rawTime) {
-                                    try {
-                                        let s = rawTime;
-                                        if (s.indexOf("Z") === -1 && s.indexOf("+") === -1) s = s.replace(" ", "T") + "Z";
-                                        const dateObj = new Date(s);
-                                        displayTime = dateObj.toLocaleString("id-ID", {
-                                            year: "numeric", month: "long", day: "numeric",
-                                            hour: "2-digit", minute: "2-digit", second: "2-digit",
-                                            timeZone: "Asia/Jakarta", hour12: false
-                                        }).replace(/\./g, ':') + ' WIB';
-                                    } catch (e) { displayTime = rawTime; }
-                                }
-                                acceptedTimeEl.textContent = displayTime;
-                            }
-                        });
-                    }
+                    console.log('[Preloader] Applied lockout style for step:', activeIdx);
+                } else {
+                    console.log('[Preloader] No status found, showing default form.');
                 }
-            } catch (e) { console.error('Preloader error', e); }
+            } catch (e) { 
+                console.error('Preloader error', e);
+                // On error, ensure we don't have a half-broken style
+                const s = document.getElementById('preloaderHideStyle');
+                if (s) s.remove();
+            }
         })();
     </script>
 @endsection
@@ -221,8 +205,36 @@
 
                     <!-- STEP 0: ISI FORMULIR -->
                     <div class="section active" data-step="0">
-                        <h3>Formulir Pendaftaran Siswa Baru</h3>
-                        <p>Silakan isi semua data dengan benar dan lengkap.</p>
+                        <div class="step-wizard-wrap">
+                            <div class="wizard-header">
+                                <div class="sub-progress-wrap">
+                                    <div class="sub-steps-indicator">
+                                        <div class="sub-step-item active" data-sub="0">
+                                            <div class="dot"></div>
+                                            <span>Siswa</span>
+                                        </div>
+                                        <div class="sub-step-item" data-sub="1">
+                                            <div class="dot"></div>
+                                            <span>Alamat</span>
+                                        </div>
+                                        <div class="sub-step-item" data-sub="2">
+                                            <div class="dot"></div>
+                                            <span>Sekolah</span>
+                                        </div>
+                                        <div class="sub-step-item" data-sub="3">
+                                            <div class="dot"></div>
+                                            <span>Orang Tua</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill" id="subProgressBar" style="width: 25%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wizard-body">
+                                <!-- Sub Step 0: Data Diri -->
+                                <div class="sub-section active" data-sub="0">
 
                         <!-- Data Diri -->
                         <div class="form-section">
@@ -273,16 +285,18 @@
                                 <div class="field" data-required="true">
                                     <label for="nisn">NISN <span class="req">*</span></label>
                                     <input type="text" id="nisn" name="nisn"
-                                        placeholder="Masukkan NISN (jika tidak ada isi -)" required>
+                                        placeholder="Masukkan NISN" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
                                 <div class="field" data-required="true">
                                     <label for="nik">NIK (Siswa) <span class="req">*</span></label>
-                                    <input type="text" id="nik" name="nik" placeholder="Masukkan NIK" required>
+                                    <input type="text" id="nik" name="nik" placeholder="Masukkan NIK" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
                             </div>
                         </div>
+                                </div>
 
-                        <!-- Alamat -->
+                                <!-- Sub Step 1: Alamat -->
+                                <div class="sub-section" data-sub="1">
                         <div class="form-section">
                             <h4>Alamat Lengkap</h4>
                             <div class="grid2">
@@ -313,7 +327,7 @@
                                 </div>
                                 <div class="field" data-required="true">
                                     <label for="kode_pos">Kode Pos <span class="req">*</span></label>
-                                    <input type="text" id="kode_pos" name="kode_pos" placeholder="Kode Pos" required>
+                                    <input type="text" id="kode_pos" name="kode_pos" placeholder="Kode Pos" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
                                 <div class="field" data-required="true">
                                     <label for="jenis_tinggal">Jenis Tinggal <span class="req">*</span></label>
@@ -376,12 +390,16 @@
                                 <div class="field" data-required="true">
                                     <label for="email">Email <span class="req">*</span></label>
                                     <input type="email" id="email" name="email" placeholder="Masukkan alamat email"
+                                        value="{{ auth()->user()->email ?? '' }}"
+                                        @auth readonly style="background-color: #f8fafc; cursor: not-allowed;" title="Email terkunci sesuai akun Anda" @endauth
                                         required>
                                 </div>
                             </div>
                         </div>
+                                </div>
 
-                        <!-- Sekolah & Bantuan -->
+                                <!-- Sub Step 2: Sekolah -->
+                                <div class="sub-section" data-sub="2">
                         <div class="form-section">
                             <h4>Sekolah Asal & Bantuan</h4>
                             <div class="grid2">
@@ -392,7 +410,7 @@
                                 </div>
                                 <div class="field" data-required="true">
                                     <label for="skhun">SKHUN <span class="req">*</span></label>
-                                    <input type="text" id="skhun" name="skhun" placeholder="Nomor SKHUN" required>
+                                    <input type="text" id="skhun" name="skhun" placeholder="Nomor SKHUN" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
                                 <div class="field">
                                     <label>Penerima KPS/KIP/PKH?</label>
@@ -403,8 +421,10 @@
                                 </div>
                             </div>
                         </div>
+                                </div>
 
-                        <!-- Data Orang Tua -->
+                                <!-- Sub Step 3: Orang Tua -->
+                                <div class="sub-section" data-sub="3">
                         <div class="form-section">
                             <h4>Data Orang Tua</h4>
                             <h5>Ayah</h5>
@@ -421,7 +441,7 @@
                                 </div>
                                 <div class="field" data-required="true">
                                     <label for="nik_ayah">NIK Ayah <span class="req">*</span></label>
-                                    <input type="text" id="nik_ayah" name="nik_ayah" placeholder="NIK ayah" required>
+                                    <input type="text" id="nik_ayah" name="nik_ayah" placeholder="NIK ayah" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
                                 <div class="field" data-required="true">
                                     <label for="pendidikan_ayah">Jenjang Pendidikan Ayah <span class="req">*</span></label>
@@ -475,7 +495,7 @@
                                 </div>
                                 <div class="field" data-required="true">
                                     <label for="nik_ibu">NIK Ibu <span class="req">*</span></label>
-                                    <input type="text" id="nik_ibu" name="nik_ibu" placeholder="NIK ibu" required>
+                                    <input type="text" id="nik_ibu" name="nik_ibu" placeholder="NIK ibu" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
                                 <div class="field" data-required="true">
                                     <label for="pendidikan_ibu">Jenjang Pendidikan Ibu <span class="req">*</span></label>
@@ -515,30 +535,33 @@
                                         required></textarea>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Review & Agreement -->
-                        <div class="form-section">
-                            <h4>Konfirmasi Data</h4>
-
-                            <div class="field" data-required="true">
-                                <label style="font-weight: 500;">
-                                    <input type="checkbox" id="agree" name="agree" required>
-                                    Saya menyatakan bahwa data yang saya isi adalah benar dan saya bertanggung jawab atas
-                                    kebenarannya. <span class="req">*</span>
-                                </label>
+                                        <div class="field" data-required="true" style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed var(--line);">
+                                            <label style="font-weight: 600; display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                                                <input type="checkbox" id="agree" name="agree" required style="margin-top: 4px;">
+                                                <span>Saya menyatakan bahwa data yang saya isi adalah benar dan saya bertanggung jawab atas kebenarannya. <span class="req">*</span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Actions for Step 0: Isi Formulir -->
-                        <div class="actions" style="margin-top: 20px;">
-                            <div class="left">
-                                <button id="backToHomeBtn" class="btn primary" type="button"
-                                    style="background-color:#ef4444; border-color:#ef4444; color:white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);">Keluar</button>
-                            </div>
-                            <div class="right">
-                                <button type="button" id="btnSaveData" class="btn primary"
-                                    onclick="window.handleSaveData();">Simpan Data</button>
+                            <div class="wizard-footer">
+                                <div class="actions" style="margin-top: 20px; border-top: 1px solid var(--line); padding-top: 20px;">
+                                    <div class="left">
+                                        <button type="button" class="btn ghost" id="btnPrevSub" onclick="window.prevSubStep()" style="display: none;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                                            Sebelumnya
+                                        </button>
+                                        <button id="backToHomeBtn" class="btn ghost" type="button">Kembali ke Beranda</button>
+                                    </div>
+                                    <div class="right">
+                                        <button type="button" id="btnNextSub" class="btn primary" onclick="window.nextSubStep()">
+                                            Selanjutnya
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                                        </button>
+                                        <button type="button" id="btnSaveData" class="btn primary" style="display: none;" onclick="window.handleSaveData();">Simpan & Lanjut Review</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -678,7 +701,7 @@
                         <!-- Actions for Step 1: Review Data -->
                         <div class="actions" style="margin-top: 20px;">
                             <div class="left">
-                                <button class="btn ghost" id="btnEditKembali" type="button" onclick="setStep(0);">Kembali
+                                <button class="btn ghost" id="btnEditKembali" type="button" onclick="confirmBackToEdit();">Kembali
                                     Edit</button>
                             </div>
                             <div class="right">
@@ -858,20 +881,6 @@
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Edit (Moved) -->
-    <div id="confirmExitModal"
-        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:9999;">
-        <div role="dialog" aria-modal="true" aria-labelledby="confirmExitTitle"
-            style="background:#fff; max-width:480px; width:92%; padding:20px; border-radius:12px; box-shadow:0 8px 30px rgba(2,6,23,0.2);">
-            <h3 id="confirmExitTitle" style="margin-top:0;">Yakin ingin keluar?</h3>
-            <p style="color:#334155;">Jika Anda keluar sekarang, perubahan yang belum disimpan mungkin hilang. Apakah Anda
-                yakin ingin kembali ke beranda?</p>
-            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:18px;">
-                <button id="cancelExitBtn" class="btn ghost" type="button">Batal</button>
-                <button id="confirmExitBtn" class="btn primary" type="button">Ya, Keluar</button>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @section('scripts')
@@ -881,27 +890,34 @@
         (function () {
             const backBtn = document.getElementById('backToHomeBtn');
             const headerBackLink = document.getElementById('linkHome');
-            const modal = document.getElementById('confirmExitModal');
-            const cancelBtn = document.getElementById('cancelExitBtn');
-            const confirmBtn = document.getElementById('confirmExitBtn');
-
             function openExitModal(e) {
                 if (e) e.preventDefault();
-                modal.style.display = 'flex';
-                confirmBtn.focus();
-            }
-
-            function closeExitModal() {
-                modal.style.display = 'none';
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Yakin ingin keluar?',
+                        text: 'Jika Anda keluar sekarang, perubahan yang belum disimpan mungkin hilang. Apakah Anda yakin ingin kembali ke beranda?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Ya, Keluar',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{{ url('/') }}";
+                        }
+                    });
+                } else {
+                    if (confirm('Jika Anda keluar sekarang, perubahan yang belum disimpan mungkin hilang. Apakah Anda yakin ingin kembali ke beranda?')) {
+                        window.location.href = "{{ url('/') }}";
+                    }
+                }
             }
 
             backBtn?.addEventListener('click', openExitModal);
             headerBackLink?.addEventListener('click', openExitModal);
-            cancelBtn?.addEventListener('click', closeExitModal);
-
-            confirmBtn?.addEventListener('click', function () {
-                window.location.href = "{{ url('/') }}";
-            });
 
             let formTouched = false;
             document.addEventListener('input', function () { formTouched = true; }, { capture: true });

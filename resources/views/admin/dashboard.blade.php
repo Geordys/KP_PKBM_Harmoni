@@ -149,12 +149,11 @@
 @section('scripts')
 <script>
     const API_STATS = "{{ url('/api/admin/stats') }}";
-    const tokenAdmin = localStorage.getItem("token_admin");
 
     async function fetchData() {
         try {
             const res = await fetch(API_STATS, {
-                headers: { "Authorization": "Bearer " + tokenAdmin }
+                credentials: 'same-origin'
             });
             const data = await res.json();
 

@@ -13,8 +13,10 @@ const STATUS_URL = `${API_BASE}/registrations/status`;
 
 // Global State
 let idx = 0;
+let subIdx = 0;
 let currentRegistration = null;
 let sections = [];
+let subSections = [];
 let steps = [];
 
 // Global Elements
@@ -58,6 +60,81 @@ window.handleSaveData = () => {
   }
 };
 
+// ==============================
+// SUB-STEP NAVIGATION (STEP 0)
+// ==============================
+window.setSubStep = (i) => {
+  if (!subSections || subSections.length === 0) {
+    subSections = [...document.querySelectorAll(".sub-section")];
+  }
+
+  subIdx = Math.max(0, Math.min(i, subSections.length - 1));
+
+  // Toggle visibility with animation support
+  subSections.forEach((s, n) => {
+    if (n === subIdx) {
+      s.style.display = 'block';
+      setTimeout(() => s.classList.add("active"), 10);
+    } else {
+      s.style.display = 'none';
+      s.classList.remove("active");
+    }
+  });
+
+  // Update Indicators
+  const indicators = document.querySelectorAll(".sub-step-item");
+  indicators.forEach((item, n) => {
+    item.classList.toggle("active", n === subIdx);
+    item.classList.toggle("done", n < subIdx);
+  });
+
+  // Update Progress Bar
+  const progressFill = document.getElementById("subProgressBar");
+  if (progressFill) {
+    const percent = ((subIdx + 1) / subSections.length) * 100;
+    progressFill.style.width = percent + "%";
+  }
+
+  // Toggle Buttons
+  const btnPrev = document.getElementById("btnPrevSub");
+  const btnNext = document.getElementById("btnNextSub");
+  const btnSave = document.getElementById("btnSaveData");
+  const btnExit = document.getElementById("backToHomeBtn");
+
+  if (btnPrev) btnPrev.style.display = (subIdx === 0) ? 'none' : 'inline-flex';
+  if (btnExit) btnExit.style.display = (subIdx === 0) ? 'inline-flex' : 'none';
+
+  if (subIdx === subSections.length - 1) {
+    if (btnNext) btnNext.style.display = 'none';
+    if (btnSave) btnSave.style.display = 'inline-flex';
+  } else {
+    if (btnNext) btnNext.style.display = 'inline-flex';
+    if (btnSave) btnSave.style.display = 'none';
+  }
+
+  // Scroll to top of the wizard
+  const wizardHeader = document.querySelector('.wizard-header');
+  if (wizardHeader) {
+    wizardHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+
+window.nextSubStep = () => {
+  if (validateSection(0, subIdx)) {
+    window.setSubStep(subIdx + 1);
+    // Autosave when moving between sub-steps
+    if (typeof autosaveCurrentDraft === 'function') {
+      autosaveCurrentDraft();
+    }
+  }
+};
+
+window.prevSubStep = () => {
+  window.setSubStep(subIdx - 1);
+};
+
 // Direct Submit: uses SweetAlert2 then sends data to server
 window.doDirectSubmit = async () => {
   if (typeof Swal === 'undefined') {
@@ -77,9 +154,9 @@ window.doDirectSubmit = async () => {
   }
 
   const submitBtn = document.getElementById('btnSubmitReview');
-  if (submitBtn) { 
-    submitBtn.disabled = true; 
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...'; 
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...';
   }
 
   const payload = getFormData();
@@ -106,7 +183,7 @@ window.doDirectSubmit = async () => {
           confirmButtonColor: '#2563eb'
         });
       }
-      setStep(getStepFromStatus(data.status));
+      setStep(getStepFromStatus(data));
     } else {
       if (typeof Swal !== 'undefined') {
         Swal.fire('Gagal!', data.message || 'Terjadi kesalahan.', 'error');
@@ -122,9 +199,9 @@ window.doDirectSubmit = async () => {
     }
     console.error('Submit error:', e);
   } finally {
-    if (submitBtn) { 
-      submitBtn.disabled = false; 
-      submitBtn.textContent = "Submit"; 
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit";
     }
   }
 };
@@ -171,7 +248,7 @@ function setStep(i) {
 
   const statusRaw = String((currentRegistration && currentRegistration.status) || '').toUpperCase();
   const editAllowed = currentRegistration && (currentRegistration.edit_allowed == 1 || currentRegistration.edit_allowed === true);
-  
+
   if (['MENUNGGU', 'DIVERIFIKASI', 'DITERIMA'].includes(statusRaw) && !editAllowed) {
     const lockedStep = getStepFromStatus(statusRaw);
     if (i !== lockedStep) i = lockedStep;
@@ -194,13 +271,14 @@ function setStep(i) {
     st.classList.toggle("done", n < idx);
   });
 
+  if (idx === 0) window.setSubStep(0);
   if (idx === 0 || idx === 1) renderReview();
   if (idx === 2) updateWaitingStatus();
   if (idx === 3) updateVerifiedStatus();
   if (idx === 4) updateAcceptedStatus();
 
   hideErr();
-  
+
   // Selalu scroll ke atas halaman saat berpindah step
   const aggressiveScroll = () => {
     window.scrollTo(0, 0);
@@ -215,22 +293,22 @@ function setStep(i) {
   setTimeout(aggressiveScroll, 50);
 }
 
-window.toggleBankLainnya = function() {
-    const select = document.getElementById('jenis_bank');
-    const field = document.getElementById('field_jenis_bank_lainnya');
-    const input = document.getElementById('jenis_bank_lainnya');
-    if (select && field && input) {
-        if (select.value === 'Lainnya') {
-            field.style.display = 'block';
-            field.setAttribute('data-required', 'true');
-            input.setAttribute('required', 'required');
-        } else {
-            field.style.display = 'none';
-            field.removeAttribute('data-required');
-            input.removeAttribute('required');
-            input.value = '';
-        }
+window.toggleBankLainnya = function () {
+  const select = document.getElementById('jenis_bank');
+  const field = document.getElementById('field_jenis_bank_lainnya');
+  const input = document.getElementById('jenis_bank_lainnya');
+  if (select && field && input) {
+    if (select.value === 'Lainnya') {
+      field.style.display = 'block';
+      field.setAttribute('data-required', 'true');
+      input.setAttribute('required', 'required');
+    } else {
+      field.style.display = 'none';
+      field.removeAttribute('data-required');
+      input.removeAttribute('required');
+      input.value = '';
     }
+  }
 };
 
 function getFormData() {
@@ -327,6 +405,11 @@ function setFormData(data) {
       }
     }
 
+    // Force email from AUTH if present
+    if (name === 'email' && window.SERVER_USER_DATA && window.SERVER_USER_DATA.email) {
+      val = window.SERVER_USER_DATA.email;
+    }
+
     if (val === undefined || val === null) return;
 
     if (el.type === "radio") {
@@ -340,9 +423,14 @@ function setFormData(data) {
     }
     handled.add(name);
   });
+
+  // Highlight filled fields after setting data
+  document.querySelectorAll("input, select, textarea").forEach(el => {
+    if (typeof window.updateFilledClass === 'function') window.updateFilledClass(el);
+  });
 }
 
-function validateSection(secIdx) {
+function validateSection(secIdx, targetSubIdx = null) {
   hideErr();
   let ok = true;
   let missingFields = [];
@@ -353,15 +441,26 @@ function validateSection(secIdx) {
   const sec = sections[secIdx];
   if (!sec) return false;
 
-  sec.querySelectorAll(".field").forEach(f => {
+  let fieldsToValidate;
+  if (secIdx === 0 && targetSubIdx !== null) {
+    if (!subSections || subSections.length === 0) {
+      subSections = [...document.querySelectorAll(".sub-section")];
+    }
+    const subSec = subSections[targetSubIdx];
+    fieldsToValidate = subSec ? subSec.querySelectorAll(".field") : [];
+  } else {
+    fieldsToValidate = sec.querySelectorAll(".field");
+  }
+
+  fieldsToValidate.forEach(f => {
     f.classList.remove("invalid");
     const label = f.querySelector("label");
     const labelText = label ? label.innerText.split('*')[0].trim() : "Kolom";
-    
+
     // Check for explicit data-required or internal [required] attribute
     const isRequired = f.dataset.required === "true" || !!f.querySelector('[required]');
     const input = f.querySelector("input, select, textarea");
-    
+
     if (!input) return;
 
     let fieldOk = true;
@@ -374,13 +473,34 @@ function validateSection(secIdx) {
         if (!input.checked) fieldOk = false;
       }
       else {
-        if (!input.value || input.value.trim() === "") fieldOk = false;
+        if (!input.value || input.value.trim() === "" || input.value.trim() === "-") fieldOk = false;
       }
     }
 
     // Email format validation
-    if (input.name === "email" && input.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
-      fieldOk = false;
+    if (input.name === "email" && input.value) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
+        fieldOk = false;
+      }
+
+      // CUSTOM VALIDATION: Email must match authenticated user's email
+      const serverUser = window.SERVER_USER_DATA;
+      if (serverUser && serverUser.email && input.value.toLowerCase() !== serverUser.email.toLowerCase()) {
+        fieldOk = false;
+        ok = false;
+        f.classList.add("invalid");
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            title: 'Email Tidak Sesuai',
+            text: `Email pendaftaran (${input.value}) harus sama dengan email akun Anda (${serverUser.email}).`,
+            icon: 'error',
+            confirmButtonColor: '#2563eb'
+          });
+        } else {
+          alert(`Email pendaftaran harus sama dengan email akun Anda (${serverUser.email}).`);
+        }
+        return; // Stop further validation to focus on this error
+      }
     }
 
     if (!fieldOk) {
@@ -396,15 +516,22 @@ function validateSection(secIdx) {
       firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
-    const errorMsg = `DATA BELUM LENGKAP:\n\n${missingFields.slice(0, 5).join(", ")}${missingFields.length > 5 ? " dan lainnya" : ""} wajib diisi.`;
-    
-    // Show in UI alert
-    showErr(errorMsg);
+    const errorList = missingFields.map(f => `<li>${f}</li>`).join("");
 
-    // Hard alert for clear blocking feedback
-    alert(`PENDAFTARAN GAGAL DILANJUTKAN:\n\nMohon lengkapi kolom berikut:\n- ${missingFields.join("\n- ")}\n\nPastikan semua data bertanda bintang (*) telah terisi.`);
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: 'Data Belum Lengkap',
+        html: `<div style="text-align: left;">Mohon lengkapi kolom berikut:<br><ul style="margin-top: 10px; padding-left: 20px;">${errorList}</ul><br>Pastikan semua data bertanda bintang (*) telah terisi.</div>`,
+        icon: 'warning',
+        confirmButtonColor: '#2563eb'
+      });
+    } else {
+      const errorMsg = `DATA BELUM LENGKAP:\n\n${missingFields.slice(0, 5).join(", ")}${missingFields.length > 5 ? " dan lainnya" : ""} wajib diisi.`;
+      showErr(errorMsg);
+      alert(`PENDAFTARAN GAGAL DILANJUTKAN:\n\nMohon lengkapi kolom berikut:\n- ${missingFields.join("\n- ")}\n\nPastikan semua data bertanda bintang (*) telah terisi.`);
+    }
   }
-  
+
   return ok;
 }
 
@@ -610,17 +737,17 @@ function checkStatus() {
       if (data) {
         saveRegistrationData(data);
         const targetStep = getStepFromStatus(data);
-        
+
         // Bug Fix: If targetStep is 0 (Means we are in New/Edit phase), 
         // we should allow the user to be at idx 0 (form) OR idx 1 (review).
         // Only force setStep if the target is significantly different (e.g. status locked).
         const inDraftPhase = (targetStep === 0 && (idx === 0 || idx === 1));
-        
+
         if (targetStep !== idx && !inDraftPhase) {
-           console.log('[Status] Forcing step change from', idx, 'to', targetStep);
-           setStep(targetStep);
+          console.log('[Status] Forcing step change from', idx, 'to', targetStep);
+          setStep(targetStep);
         } else if (idx === 2) {
-           updateWaitingStatus();
+          updateWaitingStatus();
         }
       }
     });
@@ -637,6 +764,18 @@ function hideErr() { if (alertEl) alertEl.classList.remove("show"); }
 // INITIALIZATION
 // ==============================
 function initSiswaPendaftaran() {
+  // Helper to highlight filled fields
+  window.updateFilledClass = (el) => {
+    if (!el) return;
+    if (el.type === 'checkbox' || el.type === 'radio') return;
+    const val = el.value ? String(el.value).trim() : "";
+    if (val !== '' && val !== '-') {
+      el.classList.add('filled');
+    } else {
+      el.classList.remove('filled');
+    }
+  };
+
   console.log('[init] starting...');
   alertEl = document.getElementById("alert");
   stepsEl = document.getElementById("steps");
@@ -683,27 +822,50 @@ function initSiswaPendaftaran() {
         // If edit is allowed, we might have a local draft that is newer/more relevant
         const editAllowed = reg.edit_allowed == 1 || reg.edit_allowed === true || reg.edit_allowed === "1";
         const draft = loadDraft();
-        
-        if (editAllowed && draft) {
-           // We have both server data and a local draft.
-           // For now, let's load the draft as it's likely what the user was working on.
-           setFormData(draft.form);
-           setStep(0);
-           console.log('[Draft] Resuming from local draft during edit mode.');
+
+        if (editAllowed) {
+          // In edit mode: load the server data (reg) first to ensure correct starting data.
+          // We only load the draft if it was saved AFTER the server record's last update timestamp.
+          setFormData(reg);
+
+          if (draft && draft.form && draft.form.nama) {
+            let draftTime = 0;
+            let regTime = 0;
+            try {
+              if (draft.at) draftTime = new Date(draft.at).getTime() || 0;
+              const regDateStr = reg.updated_at || reg.created_at;
+              if (regDateStr) {
+                const isoStr = String(regDateStr).replace(' ', 'T');
+                regTime = new Date(isoStr).getTime() || 0;
+              }
+            } catch (err) {
+              console.warn('[EditMode] Failed to parse timestamps', err);
+            }
+
+            if (draftTime > regTime) {
+              setFormData(draft.form);
+              console.log('[Draft] Resuming from local draft during edit mode.');
+            } else {
+              console.log('[Draft] Ignored older local draft, using server data.');
+            }
+          } else {
+            console.log('[Draft] No valid local draft, using server data.');
+          }
+          setStep(0);
         } else {
-           // No draft or edit not allowed: load from server
-           setFormData(reg);
-           setStep(getStepFromStatus(reg));
+          // No draft or edit not allowed: load from server
+          setFormData(reg);
+          setStep(getStepFromStatus(reg));
         }
-        
+
         if (reg.status === 'MENUNGGU') setInterval(checkStatus, 10000);
       } else {
         if (mode === 'cek_status') showNotRegisteredView();
         else {
           const draft = loadDraft();
-          if (draft) { 
-            setFormData(draft.form); 
-            setStep(draft.step || 0); 
+          if (draft) {
+            setFormData(draft.form);
+            setStep(draft.step || 0);
             console.log('[Draft] Resumed initial draft.');
           }
           else setStep(0);
@@ -713,16 +875,41 @@ function initSiswaPendaftaran() {
     finally {
       const loader = document.getElementById('startupLoader');
       if (loader) loader.remove();
-      if (document.getElementById('bodyWrap')) document.getElementById('bodyWrap').style.display = 'block';
+
+      // CRITICAL: Remove preloader style to prevent UI lockout
+      const preloaderStyle = document.getElementById('preloaderHideStyle');
+      if (preloaderStyle) {
+        preloaderStyle.remove();
+        console.log('[Init] Preloader style removed.');
+      }
+
+      if (document.getElementById('bodyWrap')) {
+        document.getElementById('bodyWrap').style.display = 'block';
+      }
+      console.log('[Init] Pendaftaran initialized successfully.');
     }
   })();
 
   // Autosave pada setiap input agar data tidak hilang saat refresh
   document.addEventListener('input', (e) => {
-    if (e.target.closest('form')) {
-      autosaveCurrentDraft();
+    if (e.target.matches('input, select, textarea')) {
+      window.updateFilledClass(e.target);
+      if (e.target.closest('form')) {
+        autosaveCurrentDraft();
+      }
     }
   });
+
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('select')) {
+      window.updateFilledClass(e.target);
+    }
+  });
+
+  // Initial highlight for pre-filled data
+  setTimeout(() => {
+    document.querySelectorAll('input, select, textarea').forEach(el => window.updateFilledClass(el));
+  }, 1000);
 
   // Handlers
   window.handleConfirmSave = () => {
@@ -744,9 +931,9 @@ function initSiswaPendaftaran() {
 
     const payload = getFormData();
     const submitBtn = document.getElementById('btnSubmitReview');
-    if (submitBtn) { 
-      submitBtn.disabled = true; 
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...'; 
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...';
     }
 
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -772,7 +959,7 @@ function initSiswaPendaftaran() {
             confirmButtonColor: '#2563eb'
           });
         }
-        setStep(getStepFromStatus(data.status));
+        setStep(getStepFromStatus(data));
       } else {
         if (typeof Swal !== 'undefined') {
           Swal.fire('Gagal!', data.message || "Gagal mengirim data.", 'error');
@@ -788,9 +975,9 @@ function initSiswaPendaftaran() {
       }
     }
     finally {
-      if (submitBtn) { 
-        submitBtn.disabled = false; 
-        submitBtn.textContent = "Submit"; 
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit";
       }
     }
   };
@@ -799,6 +986,31 @@ function initSiswaPendaftaran() {
   document.getElementById('btnYesSubmit')?.addEventListener('click', window.doSubmitNow);
   document.getElementById('btnCancelSubmit')?.addEventListener('click', () => closeModal('modalConfirm'));
   document.getElementById('closeConfirm')?.addEventListener('click', () => closeModal('modalConfirm'));
+
+  // Global handler for Kembali Edit from Review
+  window.confirmBackToEdit = () => {
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: 'Kembali Edit?',
+        text: 'Apakah Anda yakin ingin kembali mengedit data? Pastikan Anda menyimpan perubahan kembali setelah selesai.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2563eb',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Edit Lagi',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setStep(0);
+        }
+      });
+    } else {
+      if (confirm('Yakin ingin kembali mengedit data?')) {
+        setStep(0);
+      }
+    }
+  };
 }
 
 // ==============================
@@ -844,8 +1056,7 @@ async function downloadAcceptanceLetter() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  
-  // Helper functions
+
   const getPaketName = (p) => {
     if (p === 'B') return 'Paket B (Setara SMP)';
     if (p === 'C') return 'Paket C (Setara SMA)';
@@ -854,84 +1065,176 @@ async function downloadAcceptanceLetter() {
   const fmt = (v) => v || '-';
   const fmtDate = (v) => v ? new Date(v).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
 
+  const dashedLine = (x1, y1, x2, y2, dashLength = 2) => {
+    const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    const dashes = Math.floor(length / (dashLength * 2));
+    const dx = (x2 - x1) / dashes;
+    const dy = (y2 - y1) / dashes;
+    for (let i = 0; i < dashes; i++) {
+      doc.line(x1 + dx * i, y1 + dy * i, x1 + dx * i + dx / 2, y1 + dy * i + dy / 2);
+    }
+  };
+
   // --- HEADER / KOP ---
-  // Background for Header
-  doc.setFillColor(248, 250, 252);
-  doc.rect(0, 0, 210, 40, 'F');
-  
-  doc.setFontSize(24);
-  doc.setTextColor(37, 99, 235); // Blue
+  try {
+    const img = new Image();
+    img.src = '/assets/logo-pkbm.png';
+    await new Promise((resolve) => {
+      img.onload = resolve;
+      img.onerror = resolve;
+    });
+    if (img.complete && img.naturalWidth > 0) {
+      doc.addImage(img, 'PNG', 20, 10, 20, 20);
+    }
+  } catch (e) {
+    console.warn("Gagal menambahkan logo ke PDF", e);
+  }
+
+  doc.setFontSize(14);
+  doc.setTextColor(0, 0, 0);
   doc.setFont(undefined, 'bold');
-  doc.text("PKBM HARMONI", 105, 20, { align: 'center' });
-  
-  doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139);
-  doc.setFont(undefined, 'normal');
-  doc.text("PUSAT KEGIATAN BELAJAR MASYARAKAT", 105, 27, { align: 'center' });
-  doc.text("Kotayasa, Kec. Sumbang, Kab. Banyumas, Jawa Tengah", 105, 32, { align: 'center' });
-  
-  doc.setDrawColor(226, 232, 240);
-  doc.line(20, 40, 190, 40);
+  doc.text("PUSAT KEGIATAN BELAJAR MASYARAKAT (PKBM)", 110, 15, { align: 'center' });
+  doc.setFontSize(18);
+  doc.text("HARMONI", 110, 22, { align: 'center' });
+
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'italic');
+  doc.text("Alamat: Kotayasa RT 006 RW 006, Kec. Sumbang, Kab. Banyumas, Jawa Tengah", 110, 28, { align: 'center' });
+  doc.text(`Email: pkbmharmoni116@gmail.com | Telp: +62 858-7597-8865`, 110, 33, { align: 'center' });
+
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(1);
+  doc.line(20, 37, 190, 37);
 
   // --- TITLE ---
-  doc.setFontSize(16);
-  doc.setTextColor(30, 41, 59);
+  doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text("SURAT KETERANGAN PENERIMAAN", 105, 55, { align: 'center' });
-  
+  doc.text("TANDA BUKTI PENDAFTARAN / SURAT PENERIMAAN", 105, 45, { align: 'center' });
+  doc.setLineWidth(0.5);
+  doc.line(60, 46, 150, 46);
+
   doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
-  doc.text(`Nomor: ${d.nomor_pendaftaran || d.id || '-'} / PPDB / ${new Date().getFullYear()}`, 105, 62, { align: 'center' });
+  doc.text("Berdasarkan data yang telah masuk, dengan ini menerangkan bahwa:", 105, 53, { align: 'center' });
 
-  // --- CONTENT ---
-  doc.setFontSize(11);
-  doc.text("Berdasarkan hasil verifikasi data pendaftaran yang telah dilakukan, dengan ini Panitia Penerimaan", 20, 75);
-  doc.text("Peserta Didik Baru (PPDB) PKBM Harmoni menyatakan bahwa:", 20, 81);
-
-  // Data Box
-  doc.setDrawColor(241, 245, 249);
-  doc.setFillColor(252, 253, 254);
-  doc.roundedRect(20, 88, 170, 70, 3, 3, 'FD');
-
-  const startY = 100;
-  const lineGap = 10;
-  const labelX = 30;
-  const valueX = 75;
-
+  // --- A. DATA CALON PESERTA DIDIK ---
+  let y = 62;
   doc.setFont(undefined, 'bold');
-  doc.text("Nama Lengkap", labelX, startY);
-  doc.text("NIK", labelX, startY + lineGap);
-  doc.text("Tempat, Tgl Lahir", labelX, startY + lineGap * 2);
-  doc.text("Paket Pilihan", labelX, startY + lineGap * 3);
-  doc.text("Status", labelX, startY + lineGap * 4);
+  doc.text("A. DATA CALON PESERTA DIDIK", 20, y);
+  doc.line(20, y + 1, 75, y + 1);
+  doc.setFont(undefined, 'normal');
+
+  const labelX = 20;
+  const colonX = 65;
+  const valueX = 68;
+  const lineH = 6;
+
+  const fieldsA = [
+    ["Nomor Pendaftaran", d.nomor_pendaftaran || '-'],
+    ["NISN", d.nisn || '-'],
+    ["Nama Lengkap", d.nama],
+    ["Jenis Kelamin", d.jk === 'L' ? 'Laki-laki' : 'Perempuan'],
+    ["Tempat, Tanggal Lahir", `${fmt(d.tempat_lahir)}, ${fmtDate(d.tanggal_lahir)}`],
+    ["Agama", d.agama],
+    ["NIK", d.nik],
+    ["Pilihan Paket", getPaketName(d.paket)],
+    ["Alamat Lengkap", d.alamat],
+    ["Desa / Kecamatan", `${fmt(d.kelurahan_desa)} / ${fmt(d.kecamatan)}`],
+    ["No. HP / WA", d.hp],
+    ["Sekolah Asal", d.sekolah_asal]
+  ];
+
+  fieldsA.forEach(([label, val]) => {
+    y += lineH;
+    doc.text(label, labelX, y);
+    doc.text(":", colonX, y);
+    doc.text(fmt(val).toUpperCase(), valueX, y);
+  });
+
+  // --- B. DATA ORANG TUA / WALI ---
+  y += 10;
+  doc.setFont(undefined, 'bold');
+  doc.text("B. DATA ORANG TUA / WALI", 20, y);
+  doc.line(20, y + 1, 70, y + 1);
+  doc.setFont(undefined, 'normal');
+
+  const alamatOrtu = d.ayah_alamat || d.ibu_alamat || '-';
+  const fieldsB = [
+    ["Nama Ayah", d.ayah_nama],
+    ["Pekerjaan Ayah", d.ayah_pekerjaan],
+    ["Nama Ibu", d.ibu_nama],
+    ["Pekerjaan Ibu", d.ibu_pekerjaan],
+    ["Alamat Orang Tua", alamatOrtu]
+  ];
+
+  fieldsB.forEach(([label, val]) => {
+    y += lineH;
+    doc.text(label, labelX, y);
+    doc.text(":", colonX, y);
+    doc.text(fmt(val).toUpperCase(), valueX, y);
+  });
+
+  // --- CATATAN BOX ---
+  y += 10;
+  doc.setLineWidth(0.3);
+  const boxHeight = 15;
+  doc.setDrawColor(80, 80, 80);
+  doc.roundedRect(20, y - 2, 170, boxHeight, 2, 2, 'S');
+
+  doc.setFontSize(8);
+  doc.setFont(undefined, 'bold');
+  doc.text("Catatan:", 24, y + 4);
+  doc.setFont(undefined, 'normal');
+  doc.text("Siswa dinyatakan", 40, y + 4);
+  doc.setFont(undefined, 'bolditalic');
+  doc.text("DITERIMA", 65, y + 4);
+  doc.setFont(undefined, 'normal');
+  const catatanText = "sebagai peserta didik baru di PKBM Harmoni Tahun Ajaran 2026/2027.";
+  doc.text(catatanText, 84, y + 4);
+  doc.text("Simpan bukti pendaftaran ini sebagai syarat daftar ulang.", 24, y + 10);
+  doc.setDrawColor(0, 0, 0);
+
+  // --- PERSYARATAN ---
+  y += 22;
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'bold');
+  doc.text("PERSYARATAN DAFTAR ULANG (WAJIB DIBAWA):", 20, y);
+  doc.line(20, y + 1, 103, y + 1);
 
   doc.setFont(undefined, 'normal');
-  doc.text(`:  ${fmt(d.nama)}`, valueX, startY);
-  doc.text(`:  ${fmt(d.nik)}`, valueX, startY + lineGap);
-  doc.text(`:  ${fmt(d.tempat_lahir)}, ${fmtDate(d.tanggal_lahir)}`, valueX, startY + lineGap * 2);
-  doc.text(`:  ${getPaketName(d.paket)}`, valueX, startY + lineGap * 3);
-  
-  doc.setTextColor(16, 185, 129); // Green
-  doc.setFont(undefined, 'bold');
-  doc.text(":  DITERIMA", valueX, startY + lineGap * 4);
-  
-  doc.setTextColor(30, 41, 59);
-  doc.setFont(undefined, 'normal');
-  doc.setFontSize(11);
-  doc.text("Dinyatakan lulus seleksi administrasi dan diterima sebagai siswa baru PKBM Harmoni.", 20, 175);
-  doc.text("Mohon simpan surat ini sebagai bukti pendaftaran yang sah untuk proses daftar ulang.", 20, 181);
+  y += 6;
+  const col1X = 20;
+  const col2X = 110;
+
+  doc.text("1. Fotocopy Ijazah jenjang sebelumnya", col1X, y);
+  doc.text("5. Fotocopy KTP Orang Tua", col2X, y);
+  y += lineH;
+  doc.text("2. Surat Keterangan Lulus Asli", col1X, y);
+  doc.text("6. Pas Foto Berwarna 3x4", col2X, y);
+  y += lineH;
+  doc.text("3. Fotocopy Akte Kelahiran / sejenisnya", col1X, y);
+  doc.text("7. Fotocopy KIP/KPS/KKS/PKH (Jika ada)", col2X, y);
+  y += lineH;
+  doc.text("4. Fotocopy Kartu Keluarga", col1X, y);
 
   // --- FOOTER ---
-  const footerY = 220;
-  doc.setFontSize(10);
-  doc.text(`Banyumas, ${fmtDate(new Date())}`, 140, footerY);
+  y += 15;
+  doc.text(`Banyumas, ${fmtDate(new Date())}`, 140, y);
   doc.setFont(undefined, 'bold');
-  doc.text("Panitia PPDB PKBM Harmoni", 140, footerY + 7);
-  
-  doc.setTextColor(148, 163, 184);
-  doc.setFont(undefined, 'normal');
+  doc.text("Panitia PPDB", 155, y + 7);
+
+  y += 35;
+  doc.setFont(undefined, 'bold');
+  doc.text("( Admin PKBM Harmoni )", 145, y);
+  doc.line(145, y + 0.5, 185, y + 0.5);
+
+  // Pas Foto box
+  doc.setLineWidth(0.2);
+  doc.rect(20, y - 40, 25, 35);
   doc.setFontSize(8);
-  doc.text("Surat ini diterbitkan secara elektronik dan sah tanpa tanda tangan basah.", 105, 280, { align: 'center' });
+  doc.setFont(undefined, 'normal');
+  doc.text("Pas Foto", 32.5, y - 25, { align: 'center' });
+  doc.text("3 x 4", 32.5, y - 20, { align: 'center' });
 
   // Save/Download
   const fileName = `Surat_Penerimaan_${String(d.nama).replace(/\s+/g, '_')}.pdf`;

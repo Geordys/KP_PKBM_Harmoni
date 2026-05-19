@@ -126,14 +126,21 @@ class AdminController extends Controller
     public function destroy($nomorPendaftaran)
     {
         try {
-            $deleted = DB::table('registrations')
-                ->where('nomor_pendaftaran', $nomorPendaftaran)
-                ->delete();
+            $registration = DB::table('registrations')->where('nomor_pendaftaran', $nomorPendaftaran)->first();
+            
+            if ($registration) {
+                // Delete associated user if exists (to fully clear registration state)
+                if (isset($registration->email)) {
+                    DB::table('users')->where('email', $registration->email)->where('role', 'SISWA')->delete();
+                }
 
-            if ($deleted > 0) {
+                DB::table('registrations')
+                    ->where('nomor_pendaftaran', $nomorPendaftaran)
+                    ->delete();
+
                 return response()->json([
                     'success' => true,
-                    'message' => 'Data pendaftaran berhasil dihapus'
+                    'message' => 'Data pendaftaran dan akun siswa berhasil dihapus'
                 ]);
             } else {
                 return response()->json([

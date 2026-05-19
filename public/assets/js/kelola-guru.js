@@ -1,9 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token_admin');
-    if (!token) {
-        window.location.href = 'login_admin.html';
-        return;
-    }
+    // Token manual check removed because RoleMiddleware handles session-based auth.
 
     const modal = document.getElementById('guruModal');
     const form = document.getElementById('guruForm');
@@ -240,8 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('navLogout').addEventListener('click', function (e) {
         e.preventDefault();
         if (confirm('Yakin ingin keluar?')) {
-            localStorage.removeItem('token_admin');
-            window.location.href = 'login_admin.html';
+            sessionStorage.removeItem('token_admin');
+            window.location.href = '/admin/signin';
         }
     });
 

@@ -319,7 +319,7 @@
                     Pendidikan Unggulan
                 </h2>
                 <p id="programDesc" style="color:#64748b; line-height:1.8; font-size: 16px;">
-                    PKBM Harmoni menerapkan <b>Kurikulum Merdeka</b> (Tahun Pelajaran 2024/2025) yang mencakup
+                    PKBM Harmoni menerapkan <b>Kurikulum Merdeka</b> (Tahun Pelajaran 2026/2027) yang mencakup
                     Intrakurikuler, Projek Penguatan Profil Pelajar Pancasila, Ekstrakurikuler, dan Aktualisasi Budaya
                     Positif.
                 </p>
@@ -331,21 +331,21 @@
                 <div class="card"
                     style="padding:40px; border:1px solid #e2e8f0; border-radius:20px; box-shadow:0 10px 40px -10px rgba(0,0,0,0.05); display: flex; flex-direction: column;">
                     <h3 id="paketBTitle"
-                        style="font-size:22px; font-weight:800; color:#1e293b; margin-bottom:12px; text-align: center;">
+                        style="font-size:22px; font-weight:800; color:#1e293b; margin-bottom:12px; text-align: center; min-height: 54px; display: flex; align-items: center; justify-content: center;">
                         Program Paket B</h3>
-                    <p id="paketBDesc" style="color:#64748b; margin-bottom:24px; text-align: center;">
+                    <p id="paketBDesc" style="color:#64748b; margin-bottom:24px; text-align: center; min-height: 80px;">
                         Setara SMP. Menggunakan <b>Kurikulum Merdeka (Fase D)</b> untuk Kelas VII, VIII, dan IX. Pendekatan
                         mata pelajaran yang terstruktur.
                     </p>
                     <ul style="list-style: none; padding: 0; margin-bottom: 30px; font-size: 14px; color: #475569;">
-                        <li style="display: flex; align-items: start; margin-bottom: 12px;">
+                        <li style="display: flex; align-items: start; margin-bottom: 12px; min-height: 50px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"
                                 style="min-width:18px; margin-right: 12px; margin-top: 3px;">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                             <span id="paketBUmum"><b>Kelompok Umum:</b> PAI, PKn, B.Indo, B.Inggris, MTK, IPA, IPS</span>
                         </li>
-                        <li style="display: flex; align-items: start; margin-bottom: 12px;">
+                        <li style="display: flex; align-items: start; margin-bottom: 12px; min-height: 50px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"
                                 style="min-width:18px; margin-right: 12px; margin-top: 3px;">
                                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -353,7 +353,7 @@
                             <span id="paketBKhusus"><b>Kelompok Khusus:</b> Pemberdayaan, Keterampilan Wajib &
                                 Pilihan</span>
                         </li>
-                        <li style="display: flex; align-items: start; margin-bottom: 12px;">
+                        <li style="display: flex; align-items: start; margin-bottom: 12px; min-height: 50px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"
                                 style="min-width:18px; margin-right: 12px; margin-top: 3px;">
                                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -361,7 +361,7 @@
                             <span id="paketBPengembangan"><b>Pengembangan Diri:</b> Seni Musik & TIK (Komputer
                                 Digital)</span>
                         </li>
-                        <li style="display: flex; align-items: start; margin-bottom: 12px;">
+                        <li style="display: flex; align-items: start; margin-bottom: 12px; min-height: 50px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"
                                 style="min-width:18px; margin-right: 12px; margin-top: 3px;">
                                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -375,35 +375,35 @@
                 <div class="card"
                     style="padding:40px; border:1px solid #e2e8f0; border-radius:20px; box-shadow:0 10px 40px -10px rgba(0,0,0,0.05); display: flex; flex-direction: column;">
                     <h3 id="paketCTitle"
-                        style="font-size:22px; font-weight:800; color:#1e293b; margin-bottom:12px; text-align: center;">
+                        style="font-size:22px; font-weight:800; color:#1e293b; margin-bottom:12px; text-align: center; min-height: 54px; display: flex; align-items: center; justify-content: center;">
                         Program Paket C</h3>
-                    <p id="paketCDesc" style="color:#64748b; margin-bottom:24px; text-align: center;">
+                    <p id="paketCDesc" style="color:#64748b; margin-bottom:24px; text-align: center; min-height: 80px;">
                         Setara SMA. Implementasi <b>Kurikulum Merdeka</b> Fase E (Kelas X) & Fase F (Kelas XI, XII). Siap
                         kuliah atau kerja.
                     </p>
                     <ul style="list-style: none; padding: 0; margin-bottom: 30px; font-size: 14px; color: #475569;">
-                        <li style="display: flex; align-items: start; margin-bottom: 12px;">
+                        <li style="display: flex; align-items: start; margin-bottom: 12px; min-height: 50px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3"
                                 style="min-width:18px; margin-right: 12px; margin-top: 3px;">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                             <span id="paketCUmum"><b>Kelompok Umum:</b> PAI, PKn, B.Indo, MTK, Sejarah, B.Inggris</span>
                         </li>
-                        <li style="display: flex; align-items: start; margin-bottom: 12px;">
+                        <li style="display: flex; align-items: start; margin-bottom: 12px; min-height: 50px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3"
                                 style="min-width:18px; margin-right: 12px; margin-top: 3px;">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                             <span id="paketCIps"><b>Peminatan IPS:</b> Geografi, Sejarah, Sosiologi, Ekonomi</span>
                         </li>
-                        <li style="display: flex; align-items: start; margin-bottom: 12px;">
+                        <li style="display: flex; align-items: start; margin-bottom: 12px; min-height: 50px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3"
                                 style="min-width:18px; margin-right: 12px; margin-top: 3px;">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                             <span id="paketCPengembangan"><b>Pengembangan Diri:</b> Seni Musik & TIK (Komputer)</span>
                         </li>
-                        <li style="display: flex; align-items: start; margin-bottom: 12px;">
+                        <li style="display: flex; align-items: start; margin-bottom: 12px; min-height: 50px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3"
                                 style="min-width:18px; margin-right: 12px; margin-top: 3px;">
                                 <polyline points="20 6 9 17 4 12"></polyline>

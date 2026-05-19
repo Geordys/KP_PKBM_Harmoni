@@ -120,7 +120,7 @@ class HomepageContentSeeder extends Seeder
             // PROGRAM SECTION
             ['section' => 'program', 'key' => 'program_badge', 'label' => 'Badge Program', 'value' => 'Program', 'type' => 'text'],
             ['section' => 'program', 'key' => 'program_title', 'label' => 'Judul Program', 'value' => 'Program Pendidikan Unggulan', 'type' => 'text'],
-            ['section' => 'program', 'key' => 'program_desc', 'label' => 'Deskripsi Program', 'value' => 'PKBM Harmoni menerapkan Kurikulum Merdeka (Tahun Pelajaran 2024/2025) yang mencakup Intrakurikuler, Projek Penguatan Profil Pelajar Pancasila, Ekstrakurikuler, dan Aktualisasi Budaya Positif.', 'type' => 'textarea'],
+            ['section' => 'program', 'key' => 'program_desc', 'label' => 'Deskripsi Program', 'value' => 'PKBM Harmoni menerapkan Kurikulum Merdeka (Tahun Pelajaran 2026/2027) yang mencakup Intrakurikuler, Projek Penguatan Profil Pelajar Pancasila, Ekstrakurikuler, dan Aktualisasi Budaya Positif.', 'type' => 'textarea'],
             
             // Paket B
             ['section' => 'program', 'key' => 'paket_b_title', 'label' => 'Judul Paket B', 'value' => 'Program Paket B', 'type' => 'text'],

@@ -67,56 +67,125 @@ class RegistrationController extends Controller
             return response()->json(['message' => 'Validasi gagal', 'errors' => $ve->errors()], 422);
         }
 
+        // CUSTOM VALIDATION: Email must match authenticated user's email
+        if (auth()->check() && isset($data['email']) && $data['email'] !== auth()->user()->email) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => ['email' => ['Email pendaftaran harus sama dengan email akun Anda (' . auth()->user()->email . ').']]
+            ], 422);
+        }
+
         try {
-            $nomor = 'PKBM-' . date('Ymd') . '-' . str_pad((string)random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+            $existing = null;
+            if (isset($data['email'])) {
+                $existing = DB::table('registrations')
+                    ->whereRaw('LOWER(email) = ?', [strtolower(trim($data['email']))])
+                    ->first();
+            }
 
-            $id = DB::table('registrations')->insertGetId([
-                'nomor_pendaftaran' => $nomor,
-                'nama' => $data['nama'],
-                'paket' => $data['paket'],
-                'jk' => $data['jk'],
-                'nisn' => $data['nisn'] ?? null,
-                'nik' => $data['nik'] ?? null,
-                'tempat_lahir' => $data['tempat_lahir'] ?? null,
-                'tanggal_lahir' => $data['tanggal_lahir'],
-                'agama' => $data['agama'] ?? null,
-                'hp' => $data['hp'],
-                'email' => $data['email'] ?? null,
-                'alamat' => $data['alamat'],
-                'rt_rw' => ($data['rt'] ?? '') . '/' . ($data['rw'] ?? ''),
-                'dusun' => $data['dusun'] ?? null,
-                'kelurahan_desa' => $data['desa'],
-                'kecamatan' => $data['kecamatan'],
-                'kode_pos' => $data['kode_pos'] ?? null,
-                'jenis_tinggal' => $data['jenis_tinggal'] ?? null,
-                'transportasi' => $data['alat_transportasi'] ?? null,
-                'telepon' => $data['telepon'] ?? null,
-                'jenis_bank' => $data['jenis_bank'] ?? null,
-                'no_rekening' => $data['no_rekening'] ?? null,
-                'sekolah_asal' => $data['sekolah_asal'],
-                'skhun' => $data['skhun'] ?? null,
-                'penerima_kps_kip_pkh' => $data['penerima_kps'] ?? null,
-                'catatan' => $data['catatan_tambahan'] ?? null,
-                'ayah_nama' => $data['nama_ayah'] ?? null,
-                'ayah_tahun_lahir' => $data['tanggal_lahir_ayah'] ?? null,
-                'ayah_pendidikan' => $data['pendidikan_ayah'] ?? null,
-                'ayah_pekerjaan' => $data['pekerjaan_ayah'] ?? null,
-                'ayah_penghasilan' => $data['penghasilan_ayah'] ?? null,
-                'ayah_nik' => $data['nik_ayah'] ?? null,
-                'ibu_nama' => $data['nama_ibu'] ?? null,
-                'ibu_tahun_lahir' => $data['tanggal_lahir_ibu'] ?? null,
-                'ibu_pendidikan' => $data['pendidikan_ibu'] ?? null,
-                'ibu_pekerjaan' => $data['pekerjaan_ibu'] ?? null,
-                'ibu_penghasilan' => $data['penghasilan_ibu'] ?? null,
-                'ibu_nik' => $data['nik_ibu'] ?? null,
-                'ayah_alamat' => $data['ayah_alamat'] ?? null,
-                'ibu_alamat' => $data['ibu_alamat'] ?? null,
-                'status' => 'MENUNGGU',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            if ($existing) {
+                $nomor = $existing->nomor_pendaftaran;
+                $id = $existing->id;
 
-            \Log::info('Registration created', ['id' => $id, 'nomor' => $nomor]);
+                DB::table('registrations')
+                    ->where('id', $id)
+                    ->update([
+                        'nama' => $data['nama'],
+                        'paket' => $data['paket'],
+                        'jk' => $data['jk'],
+                        'nisn' => $data['nisn'] ?? null,
+                        'nik' => $data['nik'] ?? null,
+                        'tempat_lahir' => $data['tempat_lahir'] ?? null,
+                        'tanggal_lahir' => $data['tanggal_lahir'],
+                        'agama' => $data['agama'] ?? null,
+                        'hp' => $data['hp'],
+                        'alamat' => $data['alamat'],
+                        'rt_rw' => ($data['rt'] ?? '') . '/' . ($data['rw'] ?? ''),
+                        'dusun' => $data['dusun'] ?? null,
+                        'kelurahan_desa' => $data['desa'],
+                        'kecamatan' => $data['kecamatan'],
+                        'kode_pos' => $data['kode_pos'] ?? null,
+                        'jenis_tinggal' => $data['jenis_tinggal'] ?? null,
+                        'transportasi' => $data['alat_transportasi'] ?? null,
+                        'telepon' => $data['telepon'] ?? null,
+                        'jenis_bank' => $data['jenis_bank'] ?? null,
+                        'no_rekening' => $data['no_rekening'] ?? null,
+                        'sekolah_asal' => $data['sekolah_asal'],
+                        'skhun' => $data['skhun'] ?? null,
+                        'penerima_kps_kip_pkh' => $data['penerima_kps'] ?? null,
+                        'catatan' => $data['catatan_tambahan'] ?? null,
+                        'ayah_nama' => $data['nama_ayah'] ?? null,
+                        'ayah_tahun_lahir' => $data['tanggal_lahir_ayah'] ?? null,
+                        'ayah_pendidikan' => $data['pendidikan_ayah'] ?? null,
+                        'ayah_pekerjaan' => $data['pekerjaan_ayah'] ?? null,
+                        'ayah_penghasilan' => $data['penghasilan_ayah'] ?? null,
+                        'ayah_nik' => $data['nik_ayah'] ?? null,
+                        'ibu_nama' => $data['nama_ibu'] ?? null,
+                        'ibu_tahun_lahir' => $data['tanggal_lahir_ibu'] ?? null,
+                        'ibu_pendidikan' => $data['pendidikan_ibu'] ?? null,
+                        'ibu_pekerjaan' => $data['pekerjaan_ibu'] ?? null,
+                        'ibu_penghasilan' => $data['penghasilan_ibu'] ?? null,
+                        'ibu_nik' => $data['nik_ibu'] ?? null,
+                        'ayah_alamat' => $data['ayah_alamat'] ?? null,
+                        'ibu_alamat' => $data['ibu_alamat'] ?? null,
+                        'status' => 'MENUNGGU',
+                        'edit_allowed' => false,
+                        'minta_izin_edit' => false,
+                        'updated_at' => now(),
+                    ]);
+
+                \Log::info('Registration updated', ['id' => $id, 'nomor' => $nomor]);
+            } else {
+                $nomor = 'PKBM-' . date('Ymd') . '-' . str_pad((string)random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+
+                $id = DB::table('registrations')->insertGetId([
+                    'nomor_pendaftaran' => $nomor,
+                    'nama' => $data['nama'],
+                    'paket' => $data['paket'],
+                    'jk' => $data['jk'],
+                    'nisn' => $data['nisn'] ?? null,
+                    'nik' => $data['nik'] ?? null,
+                    'tempat_lahir' => $data['tempat_lahir'] ?? null,
+                    'tanggal_lahir' => $data['tanggal_lahir'],
+                    'agama' => $data['agama'] ?? null,
+                    'hp' => $data['hp'],
+                    'email' => $data['email'] ?? null,
+                    'alamat' => $data['alamat'],
+                    'rt_rw' => ($data['rt'] ?? '') . '/' . ($data['rw'] ?? ''),
+                    'dusun' => $data['dusun'] ?? null,
+                    'kelurahan_desa' => $data['desa'],
+                    'kecamatan' => $data['kecamatan'],
+                    'kode_pos' => $data['kode_pos'] ?? null,
+                    'jenis_tinggal' => $data['jenis_tinggal'] ?? null,
+                    'transportasi' => $data['alat_transportasi'] ?? null,
+                    'telepon' => $data['telepon'] ?? null,
+                    'jenis_bank' => $data['jenis_bank'] ?? null,
+                    'no_rekening' => $data['no_rekening'] ?? null,
+                    'sekolah_asal' => $data['sekolah_asal'],
+                    'skhun' => $data['skhun'] ?? null,
+                    'penerima_kps_kip_pkh' => $data['penerima_kps'] ?? null,
+                    'catatan' => $data['catatan_tambahan'] ?? null,
+                    'ayah_nama' => $data['nama_ayah'] ?? null,
+                    'ayah_tahun_lahir' => $data['tanggal_lahir_ayah'] ?? null,
+                    'ayah_pendidikan' => $data['pendidikan_ayah'] ?? null,
+                    'ayah_pekerjaan' => $data['pekerjaan_ayah'] ?? null,
+                    'ayah_penghasilan' => $data['penghasilan_ayah'] ?? null,
+                    'ayah_nik' => $data['nik_ayah'] ?? null,
+                    'ibu_nama' => $data['nama_ibu'] ?? null,
+                    'ibu_tahun_lahir' => $data['tanggal_lahir_ibu'] ?? null,
+                    'ibu_pendidikan' => $data['pendidikan_ibu'] ?? null,
+                    'ibu_pekerjaan' => $data['pekerjaan_ibu'] ?? null,
+                    'ibu_penghasilan' => $data['penghasilan_ibu'] ?? null,
+                    'ibu_nik' => $data['nik_ibu'] ?? null,
+                    'ayah_alamat' => $data['ayah_alamat'] ?? null,
+                    'ibu_alamat' => $data['ibu_alamat'] ?? null,
+                    'status' => 'MENUNGGU',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                \Log::info('Registration created', ['id' => $id, 'nomor' => $nomor]);
+            }
 
             // Fetch the created registration to return complete data
             $registration = DB::table('registrations')->where('id', $id)->first();

@@ -146,7 +146,7 @@ if (posterForm) {
     btn.disabled = true;
     btn.textContent = 'Mengupload...';
 
-    const token = localStorage.getItem('token_admin');
+    const token = sessionStorage.getItem('token_admin');
     const formData = new FormData(this);
 
     const submitUpload = async (dataToSend) => {
@@ -272,7 +272,7 @@ if (dokumentasiForm) {
     const formData = new FormData();
     formData.append('number', number);
 
-    const token = localStorage.getItem('token_admin');
+    const token = sessionStorage.getItem('token_admin');
 
     const submitUpload = async (dataToSend) => {
       try {
@@ -340,11 +340,8 @@ if (logoutBtn && !logoutBtn._listenerAttached) {
 // --- Kelola Data Guru Logic (Merged from kelola-guru.js) ---
 
 document.addEventListener('DOMContentLoaded', () => {
-  const token = localStorage.getItem('token_admin');
-  if (!token) {
-    window.location.href = '/admin/login';
-    return;
-  }
+  // Token manual check removed because RoleMiddleware handles session-based auth.
+  // Bearer token will be used if available, otherwise session auth will take over.
 
   const modal = document.getElementById('guruModal');
   const form = document.getElementById('guruForm');
@@ -777,7 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function loadHomepageContentAdmin() {
-    const token = localStorage.getItem('token_admin');
+    const token = sessionStorage.getItem('token_admin');
     try {
       const response = await fetch('/api/admin/content', {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -812,8 +809,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
-    } catch (e) {
-      console.error("Error loading content:", e);
+    } catch (err) {
+      console.error('Error loading content:', err);
     }
   }
 
@@ -827,7 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
       btn.textContent = 'Menyimpan...';
 
-      const token = localStorage.getItem('token_admin');
+      const token = sessionStorage.getItem('token_admin');
       const formData = new FormData(form);
 
       // Jika ini form FAQ, susun JSONnya dulu
@@ -909,7 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
       btn.textContent = 'Mengupload...';
 
-      const token = localStorage.getItem('token_admin');
+      const token = sessionStorage.getItem('token_admin');
       const formData = new FormData(this);
 
       const submitUpload = async (dataToSend) => {
@@ -971,7 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch('/api/admin/content', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token_admin')}`,
+          'Authorization': `Bearer ${sessionStorage.getItem('token_admin')}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)

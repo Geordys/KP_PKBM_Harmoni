@@ -25,7 +25,9 @@
             --shadow: 0 2px 8px rgba(15, 23, 42, .04);
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             margin: 0;
@@ -70,9 +72,24 @@
             object-fit: cover;
         }
 
-        .brand .t1 { font-weight: 900; letter-spacing: .14em; color: var(--primary); font-size: 12px; }
-        .brand .t2 { font-weight: 900; font-size: 16px; margin-top: 2px; }
-        .brand .t3 { color: var(--muted); font-size: 12px; margin-top: 2px; }
+        .brand .t1 {
+            font-weight: 900;
+            letter-spacing: .14em;
+            color: var(--primary);
+            font-size: 12px;
+        }
+
+        .brand .t2 {
+            font-weight: 900;
+            font-size: 16px;
+            margin-top: 2px;
+        }
+
+        .brand .t3 {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
 
         .nav {
             margin-top: 18px;
@@ -94,8 +111,14 @@
             transition: all 0.2s ease;
         }
 
-        .nav a:hover { background: rgba(37, 99, 235, .06); }
-        .nav a.active { background: rgba(37, 99, 235, .1); color: var(--primary); }
+        .nav a:hover {
+            background: rgba(37, 99, 235, .06);
+        }
+
+        .nav a.active {
+            background: rgba(37, 99, 235, .1);
+            color: var(--primary);
+        }
 
         .nav .ico {
             width: 36px;
@@ -109,7 +132,9 @@
             flex: 0 0 auto;
         }
 
-        .nav a.active .ico { background: rgba(37, 99, 235, .12); }
+        .nav a.active .ico {
+            background: rgba(37, 99, 235, .12);
+        }
 
         .logout-bottom {
             position: absolute;
@@ -141,7 +166,9 @@
             box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35);
         }
 
-        .main { padding: 32px 40px 60px; }
+        .main {
+            padding: 32px 40px 60px;
+        }
 
         .topbar {
             display: flex;
@@ -178,7 +205,10 @@
         }
 
         @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; }
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
             .sidebar {
                 position: fixed;
                 left: -280px;
@@ -187,10 +217,23 @@
                 transition: left 0.3s;
                 box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
             }
-            .sidebar.active { left: 0; }
-            .sidebar-overlay.active { opacity: 1; visibility: visible; }
-            .btn-hamburger { display: flex; }
-            .main { padding: 20px; }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .btn-hamburger {
+                display: flex;
+            }
+
+            .main {
+                padding: 20px;
+            }
         }
 
         /* Generic Styles From Dashboard */
@@ -202,6 +245,7 @@
             padding: 24px;
             transition: all 0.2s ease;
         }
+
         .btn {
             border: none;
             border-radius: 10px;
@@ -213,15 +257,36 @@
             align-items: center;
             gap: 8px;
         }
-        .btn.primary { background: var(--primary); color: #fff; }
-        .btn.primary:hover { background: var(--primary2); }
-        .btn.ghost { background: #fff; border: 1px solid var(--line); color: var(--text); }
+
+        .btn.primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn.primary:hover {
+            background: var(--primary2);
+        }
+
+        .btn.ghost {
+            background: #fff;
+            border: 1px solid var(--line);
+            color: var(--text);
+        }
 
         /* Animation for SweetAlert */
-        .animated-popup { border-radius: 20px !important; }
-        .logout-confirm-btn { border-radius: 12px !important; padding: 12px 24px !important; }
-        .logout-cancel-btn { border-radius: 12px !important; padding: 12px 24px !important; }
+        .animated-popup {
+            border-radius: 20px !important;
+        }
 
+        .logout-confirm-btn {
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+        }
+
+        .logout-cancel-btn {
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+        }
     </style>
     @yield('styles')
 </head>
@@ -242,16 +307,19 @@
             <nav class="nav">
                 <a href="{{ route('admin.dashboard') }}" class="{{ Request::is('admin') ? 'active' : '' }}">
                     <div class="ico">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <path d="M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3h8v6h-8V3zM3 21h8v-6H3v6z" />
                         </svg>
                     </div>
                     Dashboard
                 </a>
 
-                <a href="{{ route('admin.pendaftaran') }}" class="{{ Request::is('admin/pendaftaran*') ? 'active' : '' }}">
+                <a href="{{ route('admin.pendaftaran') }}"
+                    class="{{ Request::is('admin/pendaftaran*') ? 'active' : '' }}">
                     <div class="ico">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <path d="M3 6h18M3 12h18M3 18h18" />
                         </svg>
                     </div>
@@ -260,17 +328,23 @@
 
                 <a href="{{ route('admin.beranda') }}" class="{{ Request::is('admin/beranda*') ? 'active' : '' }}">
                     <div class="ico">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
                         </svg>
                     </div>
                     Kelola Beranda
                 </a>
 
-                <a href="{{ route('admin.pengaturan') }}" class="{{ Request::is('admin/pengaturan*') ? 'active' : '' }}">
+                <a href="{{ route('admin.pengaturan') }}"
+                    class="{{ Request::is('admin/pengaturan*') ? 'active' : '' }}">
                     <div class="ico">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                            </path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </div>
@@ -299,27 +373,22 @@
                         <line x1="3" y1="18" x2="21" y2="18"></line>
                     </svg>
                 </button>
-                <div id="topbar_content" style="display: flex; align-items: center; justify-content: space-between; flex: 1; gap: 12px;">
+                <div id="topbar_content"
+                    style="display: flex; align-items: center; justify-content: space-between; flex: 1; gap: 12px;">
                     @yield('topbar_actions')
                 </div>
             </div>
 
             @yield('content')
 
-            <footer style="margin-top: 60px; padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; text-align: center;">
+            <footer
+                style="margin-top: 60px; padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; text-align: center;">
                 &copy; {{ date('Y') }} PKBM Harmoni. All rights reserved.
             </footer>
         </main>
     </div>
 
     <script>
-        // Auth check
-        const token = localStorage.getItem("token_admin");
-        const isLoginPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signin');
-        if (!token && !isLoginPage) {
-            window.location.href = "{{ route('admin.login') }}";
-        }
-
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
@@ -341,7 +410,18 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     localStorage.removeItem("token_admin");
-                    window.location.href = "{{ route('admin.login') }}";
+                    sessionStorage.removeItem("token_admin");
+                    // Submit form logout for session invalidation
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route("logout") }}';
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = '{{ csrf_token() }}';
+                    form.appendChild(csrf);
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             });
         };

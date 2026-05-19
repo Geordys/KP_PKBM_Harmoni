@@ -437,7 +437,7 @@
     </div>
 
     <script>
-        const API_LOGIN = "{{ url('/api/auth/login-admin') }}";
+        const API_LOGIN = "{{ route('admin.login.post') }}";
         const msgEl = document.getElementById("msg");
 
         const showMsg = (text, type) => {
@@ -472,7 +472,12 @@
             try {
                 const res = await fetch(API_LOGIN, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    credentials: 'same-origin',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
                     body: JSON.stringify({ username, password })
                 });
 
@@ -485,7 +490,7 @@
                     return;
                 }
 
-                localStorage.setItem("token_admin", data.token);
+                sessionStorage.setItem("token_admin", data.token);
 
                 // Show Modal
                 const modal = document.getElementById('welcomeModal');

@@ -211,12 +211,121 @@ class AuthController extends Controller
         ]);
     }
 
+    public function webLoginAdmin(Request $request)
+    {
+        $username = trim($request->input('username', ''));
+        $password = $request->input('password', '');
+
+        if ($username === '' || $password === '') {
+            return response()->json(['message' => 'Username/Email dan password wajib diisi'], 422);
+        }
+
+        $user = DB::table('users')
+            ->where('username', $username)
+            ->orWhere('email', $username)
+            ->first();
+
+        if (!$user || !Hash::check($password, $user->password)) {
+            return response()->json(['message' => 'Username atau password salah'], 401);
+        }
+
+        if (strtoupper($user->role ?? '') !== 'ADMIN') {
+            return response()->json(['message' => 'Akun ini bukan admin'], 403);
+        }
+
+        // Login using Laravel Auth session
+        \Illuminate\Support\Facades\Auth::loginUsingId($user->id);
+        $request->session()->regenerate();
+
+        // Also generate API token for dashboard components that use API
+        $token = bin2hex(random_bytes(32));
+        DB::table('auth_tokens')->insert([
+            'user_id' => $user->id,
+            'token' => $token,
+            'expires_at' => now()->addHours(2),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Login admin berhasil',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'name' => $user->name,
+                'role' => $user->role
+            ]
+        ]);
+    }
+
     public function webLogout(Request $request)
     {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        
+        // Deteksi apakah ini logout admin: 
+        // 1. Berdasarkan role user saat ini
+        // 2. Berdasarkan asal halaman (referer)
+        $isAdmin = ($user && strtoupper(trim($user->role ?? '')) === 'ADMIN') || 
+                   str_contains($request->header('referer', ''), '/admin');
+
         \Illuminate\Support\Facades\Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        if ($isAdmin) {
+            return redirect()->route('admin.login');
+        }
+
         return redirect('/');
+    }
+
+    public function updateAdminProfile(Request $request)
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user || strtoupper($user->role) !== 'ADMIN') return response()->json(['message' => 'Unauthorized'], 403);
+
+        $request->validate([
+            'username' => 'required|string|unique:users,username,' . $user->id,
+        ], [
+            'username.required' => 'Username wajib diisi',
+            'username.unique' => 'Username sudah digunakan'
+        ]);
+
+        DB::table('users')->where('id', $user->id)->update([
+            'username' => $request->username,
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Profil berhasil diperbarui']);
+    }
+
+    public function updateAdminPassword(Request $request)
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user || strtoupper($user->role) !== 'ADMIN') return response()->json(['message' => 'Unauthorized'], 403);
+
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8',
+            'new_password_confirmation' => 'required|same:new_password',
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi',
+            'new_password.required' => 'Password baru wajib diisi',
+            'new_password.min' => 'Password baru minimal 8 karakter',
+            'new_password_confirmation.required' => 'Konfirmasi password wajib diisi',
+            'new_password_confirmation.same' => 'Konfirmasi password tidak cocok',
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Password lama salah'], 400);
+        }
+
+        DB::table('users')->where('id', $user->id)->update([
+            'password' => Hash::make($request->new_password),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Password berhasil diubah']);
     }
 }

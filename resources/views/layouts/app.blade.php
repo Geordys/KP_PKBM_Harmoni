@@ -54,12 +54,15 @@
             }
 
             .user-greeting {
-                display: block !important;
+                display: flex !important;
+                align-items: center !important;
                 max-width: 80px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 font-size: 12px !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
             }
 
             .nav-right {
@@ -78,6 +81,8 @@
 
             .nav-right {
                 flex-shrink: 0 !important;
+                display: flex !important;
+                align-items: center !important;
             }
         }
 
@@ -267,35 +272,9 @@
                                 </span>
 
                                 <!-- Notification Bell -->
-                                <div class="notification-wrapper" style="position: relative;">
-                                    <style>
-                                        @keyframes notifPulse {
-                                            0% {
-                                                transform: scale(1);
-                                                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
-                                            }
-
-                                            70% {
-                                                transform: scale(1.05);
-                                                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-                                            }
-
-                                            100% {
-                                                transform: scale(1);
-                                                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-                                            }
-                                        }
-
-                                        .notif-striking {
-                                            background-color: #ef4444 !important;
-                                            color: white !important;
-                                            animation: notifPulse 2s infinite;
-                                            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-                                        }
-                                    </style>
-                                    <button id="notifBtn"
+                                    <button type="button" id="notifBtn"
                                         class="icon-btn @if($registration && $registration->catatan && !$registration->catatan_read) notif-striking @endif"
-                                        onclick="showNotification()" title="Notifikasi"
+                                        onclick="showNotification(event)" title="Notifikasi"
                                         style="width:40px; height:40px; background-color:#f1f5f9; color:#475569; border-radius: 10px; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; position: relative; transition: all 0.3s ease;">
                                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -338,7 +317,12 @@
                             <script>
                                 window.USER_REGISTRATION = @json($registration);
 
-                                async function showNotification() {
+                                async function showNotification(event) {
+                                    if (event) {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                    }
+                                    
                                     const reg = window.USER_REGISTRATION;
                                     if (!reg) {
                                         Swal.fire({
@@ -354,7 +338,7 @@
                                     document.getElementById('notif-nomor').textContent = reg.nomor_pendaftaran || '-';
                                     document.getElementById('notif-nama').textContent = reg.nama || '-';
                                     document.getElementById('notif-paket').textContent = (reg.paket === 'C' ? 'Paket C (SMA)' : 'Paket B (SMP)') || '-';
-                                    document.getElementById('notif-status').textContent = reg.status || 'MENUNGGU';
+                                    document.getElementById('notif-status').textContent = (reg.status || 'MENUNGGU').toUpperCase();
                                     document.getElementById('notif-hp').textContent = reg.hp || '-';
                                     document.getElementById('notif-email').textContent = reg.email || '-';
                                     document.getElementById('notif-sekolah').textContent = reg.sekolah_asal || '-';
@@ -384,13 +368,27 @@
 
                                     // Show Modal
                                     const modal = document.getElementById('customNotifModal');
-                                    if (modal) modal.style.display = 'flex';
+                                    if (modal) {
+                                        modal.style.display = 'flex';
+                                        document.body.style.overflow = 'hidden';
+                                        
+                                        // Click outside to close (delayed to prevent instant close from bubbling)
+                                        setTimeout(() => {
+                                            const closeListener = function(e) {
+                                                if (e.target === modal) {
+                                                    closeNotifModal();
+                                                    modal.removeEventListener('click', closeListener);
+                                                }
+                                            };
+                                            modal.addEventListener('click', closeListener);
+                                        }, 100);
+                                    }
 
                                     // Show/Hide Request Edit Button Logic
                                     const requestBtn = document.getElementById('notif-request-edit-btn');
                                     const requestStatus = document.getElementById('notif-request-status');
 
-                                    if (reg.status !== 'DITERIMA' && reg.status !== 'diterima' && !reg.edit_allowed) {
+                                    if (reg.catatan && reg.status !== 'DITERIMA' && reg.status !== 'diterima' && !reg.edit_allowed) {
                                         if (reg.minta_izin_edit == 1 || reg.minta_izin_edit === true) {
                                             requestBtn.style.display = 'none';
                                             requestStatus.style.display = 'inline-block';
@@ -428,7 +426,10 @@
 
                                 function closeNotifModal() {
                                     const modal = document.getElementById('customNotifModal');
-                                    if (modal) modal.style.display = 'none';
+                                    if (modal) {
+                                        modal.style.display = 'none';
+                                        document.body.style.overflow = 'auto';
+                                    }
                                 }
 
                                 async function requestEditPermission() {
@@ -462,10 +463,9 @@
                                                 text: 'Permintaan edit telah dikirim ke admin.',
                                                 icon: 'success',
                                                 confirmButtonColor: '#2563eb'
+                                            }).then(() => {
+                                                window.location.reload();
                                             });
-                                            document.getElementById('notif-request-edit-btn').style.display = 'none';
-                                            document.getElementById('notif-request-status').style.display = 'inline-block';
-                                            window.USER_REGISTRATION.minta_izin_edit = true;
                                         } else {
                                             Swal.fire('Gagal', data.message, 'error');
                                         }
@@ -647,17 +647,17 @@
 
     @yield('scripts')
     @auth
-        <!-- Custom Notification Modal (Moved to bottom to avoid clipping) -->
+        <!-- Custom Notification Modal -->
         <div id="customNotifModal"
-            style="display:none; position: fixed; z-index: 100000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto;">
-            <div class="modal-content"
-                style="background: white; width: 100%; max-width: 700px; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); position: relative; animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+            style="display:none; position: fixed; z-index: 100000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
+            <div class="modal-content" onclick="event.stopPropagation()"
+                style="background: white; width: 100%; max-width: 700px; max-height: 90vh; display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.2); position: relative; border: 1px solid #e2e8f0; animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
                 <!-- Header -->
                 <div
-                    style="padding: 20px 25px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b;">Notifikasi</h3>
-                    <button onclick="closeNotifModal()"
-                        style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b;">
+                    style="flex-shrink: 0; padding: 20px 25px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b;">Detail Notifikasi</h3>
+                    <button type="button" onclick="closeNotifModal()"
+                        style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; transition: all 0.2s;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -666,79 +666,73 @@
                     </button>
                 </div>
 
-                <div class="modal-body-scroll" style="padding: 25px;">
+                <div class="modal-body-scroll" style="flex: 1; overflow-y: auto; padding: 30px;">
                     <!-- Izin Perubahan Data Box (Green) -->
                     <div id="notif-izin-box"
-                        style="display:none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
-                        <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px;">
-                            <div style="color: #16a34a; margin-top: 2px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        style="display:none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 25px; border-left: 5px solid #16a34a;">
+                        <div style="display: flex; gap: 15px; align-items: flex-start; margin-bottom: 15px;">
+                            <div style="color: #16a34a; background: white; padding: 8px; border-radius: 10px; box-shadow: 0 2px 5px rgba(22,163,74,0.1);">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h4 style="margin: 0 0 5px 0; font-size: 15px; font-weight: 700; color: #166534;">Izin
-                                    Perubahan Data Disetujui</h4>
-                                <p style="margin: 0; font-size: 13px; color: #15803d; line-height: 1.6;">
-                                    Permintaan Anda untuk memperbarui informasi pendaftaran telah <strong>disetujui</strong>
-                                    oleh Administrator. Anda sekarang dapat mengakses kembali formulir pendaftaran untuk
-                                    melakukan perbaikan data yang diperlukan.
+                                <h4 style="margin: 0 0 5px 0; font-size: 16px; font-weight: 800; color: #166534;">Izin Edit Disetujui!</h4>
+                                <p style="margin: 0; font-size: 14px; color: #15803d; line-height: 1.6;">
+                                    Permintaan Anda untuk memperbaiki data telah disetujui. Silakan klik tombol di bawah untuk menuju formulir.
                                 </p>
                             </div>
                         </div>
                         <a href="{{ url('/pendaftaran') }}"
-                            style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 700; transition: background 0.2s;">Edit
-                            Data Sekarang</a>
+                            style="display: inline-block; background: #16a34a; color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(22,163,74,0.2);">Edit Data Sekarang</a>
                     </div>
 
                     <!-- Info Grid -->
                     <div class="modal-body-grid"
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 25px;">
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
                         <!-- Column 1 -->
-                        <div>
-                            <h5 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 700; color: #2563eb;">Informasi
-                                Pribadi</h5>
-                            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span style="color: #64748b;">Nomor:</span>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 15px; border: 1px solid #f1f5f9;">
+                            <h5 style="margin: 0 0 15px 0; font-size: 13px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px;">Informasi Pribadi</h5>
+                            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: #64748b; font-size: 11px; font-weight: 600;">NOMOR PENDAFTARAN</span>
                                     <span id="notif-nomor" style="font-weight: 700; color: #1e293b;">-</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span style="color: #64748b;">Nama:</span>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: #64748b; font-size: 11px; font-weight: 600;">NAMA LENGKAP</span>
                                     <span id="notif-nama" style="font-weight: 700; color: #1e293b;">-</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span style="color: #64748b;">Paket:</span>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: #64748b; font-size: 11px; font-weight: 600;">PROGRAM PAKET</span>
                                     <span id="notif-paket" style="font-weight: 700; color: #1e293b;">-</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="color: #64748b;">Status:</span>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: #64748b; font-size: 11px; font-weight: 600;">STATUS</span>
                                     <span id="notif-status"
-                                        style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 11px;">MENUNGGU</span>
+                                        style="display: inline-block; width: fit-content; background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 11px;">MENUNGGU</span>
                                 </div>
                             </div>
                         </div>
                         <!-- Column 2 -->
-                        <div>
-                            <h5 style="margin: 0 0 15px 0; font-size: 14px; font-weight: 700; color: #2563eb;">Kontak &
-                                Sekolah</h5>
-                            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span style="color: #64748b;">HP:</span>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 15px; border: 1px solid #f1f5f9;">
+                            <h5 style="margin: 0 0 15px 0; font-size: 13px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px;">Kontak & Sekolah</h5>
+                            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: #64748b; font-size: 11px; font-weight: 600;">WHATSAPP / HP</span>
                                     <span id="notif-hp" style="font-weight: 700; color: #1e293b;">-</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span style="color: #64748b;">Email:</span>
-                                    <span id="notif-email" style="font-weight: 700; color: #1e293b;">-</span>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: #64748b; font-size: 11px; font-weight: 600;">EMAIL</span>
+                                    <span id="notif-email" style="font-weight: 700; color: #1e293b; word-break: break-all;">-</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span style="color: #64748b;">Asal Sekolah:</span>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: #64748b; font-size: 11px; font-weight: 600;">ASAL SEKOLAH</span>
                                     <span id="notif-sekolah" style="font-weight: 700; color: #1e293b;">-</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span style="color: #64748b;">Tgl Daftar:</span>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="color: #64748b; font-size: 11px; font-weight: 600;">TANGGAL DAFTAR</span>
                                     <span id="notif-tgl" style="font-weight: 700; color: #1e293b;">-</span>
                                 </div>
                             </div>
@@ -747,29 +741,30 @@
 
                     <!-- Catatan Admin (Orange) -->
                     <div id="notif-catatan-box"
-                        style="display:none; background: #fffaf5; border: 1px solid #fed7aa; border-radius: 12px; padding: 20px;">
-                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; color: #c2410c;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                            <h4 style="margin: 0; font-size: 14px; font-weight: 700;">Catatan dari Admin</h4>
+                        style="display:none; background: #fffaf5; border: 1px solid #fed7aa; border-radius: 15px; padding: 25px; border-left: 5px solid #f97316;">
+                        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; color: #c2410c;">
+                            <div style="background: white; padding: 6px; border-radius: 8px; box-shadow: 0 2px 5px rgba(249,115,22,0.1);">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            </div>
+                            <h4 style="margin: 0; font-size: 15px; font-weight: 800;">Catatan dari Admin</h4>
                         </div>
-                        <p id="notif-catatan-content" style="margin: 0; font-size: 14px; color: #9a3412; line-height: 1.6;">
+                        <p id="notif-catatan-content" style="margin: 0; font-size: 14px; color: #9a3412; line-height: 1.7; font-weight: 500;">
                             -</p>
                     </div>
                 </div>
 
                 <!-- Footer -->
                 <div
-                    style="padding: 15px 25px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                    style="flex-shrink: 0; padding: 20px 30px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <button id="notif-request-edit-btn" onclick="requestEditPermission()"
-                            style="display:none; background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;">Minta
-                            Izin Edit</button>
+                        <button type="button" id="notif-request-edit-btn" onclick="requestEditPermission()"
+                            style="display:none; background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">Minta Izin Edit</button>
                         <span id="notif-request-status"
-                            style="display:none; font-size: 13px; font-weight: 600; color: #f59e0b; align-items: center; gap: 6px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            style="display:none; font-size: 14px; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <polyline points="12 6 12 12 16 14"></polyline>
@@ -777,11 +772,12 @@
                             Menunggu Izin Admin...
                         </span>
                     </div>
-                    <button onclick="closeNotifModal()"
-                        style="background: white; border: 1px solid #e2e8f0; color: #475569; padding: 10px 25px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;">Tutup</button>
+                    <button type="button" onclick="closeNotifModal()"
+                        style="background: white; border: 1px solid #e2e8f0; color: #475569; padding: 12px 28px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">Tutup</button>
                 </div>
             </div>
         </div>
+    @endauth
 
         <style>
             @keyframes modalSlideUp {
@@ -801,7 +797,6 @@
                 z-index: 110000 !important;
             }
         </style>
-    @endauth
 
     <script>
         function toggleMobileNav() {
