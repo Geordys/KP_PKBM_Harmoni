@@ -354,6 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ambil dan tampilkan data
   async function loadData() {
     try {
+      const token = sessionStorage.getItem('token_admin');
       const response = await fetch('/api/admin/guru', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -615,13 +616,15 @@ document.addEventListener('DOMContentLoaded', () => {
     groupPhotoForm.addEventListener('submit', async function (e) {
       e.preventDefault();
 
-      const btn = this.querySelector('button[type="submit"]');
+      const form = this; // Save form reference for scope issue
+      const token = sessionStorage.getItem('token_admin'); // Get token
+      const btn = form.querySelector('button[type="submit"]');
       const originalText = btn.textContent;
 
       btn.disabled = true;
       btn.textContent = 'Mengupload...';
 
-      const formData = new FormData(this);
+      const formData = new FormData(form);
 
       const submitUpload = async (dataToSend) => {
         try {
@@ -638,8 +641,10 @@ document.addEventListener('DOMContentLoaded', () => {
           if (result.success) {
             alert(result.message);
             // Update preview
-            document.getElementById('currentGroupPhoto').src = result.url;
-            this.reset();
+            if (result.url) {
+              document.getElementById('currentGroupPhoto').src = result.url;
+            }
+            form.reset(); // Use form variable, not this
 
             if (groupCropper) {
               groupCropper.destroy();

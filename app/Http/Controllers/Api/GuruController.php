@@ -112,24 +112,32 @@ class GuruController extends Controller
             return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
-        $data = $request->only(['nama', 'jabatan', 'kategori', 'mapel']);
+        try {
+            $data = $request->only(['nama', 'jabatan', 'kategori', 'mapel']);
 
-        if ($request->hasFile('foto')) {
-            // Delete old photo
-            if ($guru->foto) {
-                Storage::disk('public')->delete($guru->foto);
+            if ($request->hasFile('foto')) {
+                // Delete old photo
+                if ($guru->foto) {
+                    Storage::disk('public')->delete($guru->foto);
+                }
+                $path = $request->file('foto')->store('guru', 'public');
+                $data['foto'] = $path;
             }
-            $path = $request->file('foto')->store('guru', 'public');
-            $data['foto'] = $path;
+
+            $guru->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data guru berhasil diperbarui.',
+                'data' => $guru
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error updating guru: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal update data: ' . $e->getMessage()
+            ], 500);
         }
-
-        $guru->update($data);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data guru berhasil diperbarui.',
-            'data' => $guru
-        ]);
     }
     
     public function photo(string $id)
@@ -169,37 +177,60 @@ class GuruController extends Controller
      */
     public function uploadGroupPhoto(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'foto_group' => 'required|image|mimes:jpeg,png,jpg|max:10240', // Max 10MB
+        $request->validate([
+            'foto_group' => 'required|image|mimes:jpeg,png,jpg,jfif|max:10240',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         if ($request->hasFile('foto_group')) {
-            $file = $request->file('foto_group');
-            // Save directly to public/assets/guru-pkbm.jpg to overwrite the existing one
-            // Note: We use move() to public_path() because this is a static asset not in storage link
-            $destinationPath = public_path('assets');
-            $fileName = 'guru-pkbm.jpg';
-            
-            $file->move($destinationPath, $fileName);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Foto group berhasil diperbarui',
-                'url' => asset('assets/guru-pkbm.jpg') . '?t=' . time()
-            ], 200);
+            try {
+                $file = $request->file('foto_group');
+                $destinationPath = public_path('assets');
+                $filename = 'guru-pkbm.jpg';
+                
+                // Log untuk debugging
+                Log::info('Upload Group Photo', [
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'destination' => $destinationPath,
+                    'destination_exists' => is_dir($destinationPath),
+                    'destination_writable' => is_writable($destinationPath)
+                ]);
+                
+                // Pastikan directory ada
+                if (!is_dir($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                
+                // Check if writable
+                if (!is_writable($destinationPath)) {
+                    Log::error('Directory not writable', ['path' => $destinationPath]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Direktori tidak memiliki izin tulis. Hubungi administrator.'
+                    ], 500);
+                }
+                
+                $file->move($destinationPath, $filename);
+                
+                Log::info('Group photo uploaded successfully', ['filename' => $filename]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Foto group berhasil diperbarui.',
+                    'url' => asset('assets/' . $filename . '?t=' . time())
+                ], 200);
+            } catch (\Exception $e) {
+                Log::error('Error uploading group photo', [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal upload file: ' . $e->getMessage()
+                ], 500);
+            }
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'File tidak ditemukan'
-        ], 400);
+        return response()->json(['success' => false, 'message' => 'No file'], 400);
     }
 }

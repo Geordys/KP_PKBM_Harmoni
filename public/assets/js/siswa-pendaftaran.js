@@ -2,11 +2,8 @@
 // KONFIG API & UTILITY
 // ==============================
 const getApiBase = () => {
-  const origin = window.location.origin;
-  if (origin.includes(":8000")) return `${origin}/api`;
-  return `${origin}/pkbm_laravel/public/api`;
+  return `${window.location.origin}/api`;
 };
-
 const API_BASE = getApiBase();
 const REGISTER_URL = `${API_BASE}/registrations`;
 const STATUS_URL = `${API_BASE}/registrations/status`;

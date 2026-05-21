@@ -173,7 +173,8 @@ class AdminController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Poster berhasil diupload. Silakan refresh halaman beranda siswa.'
+                    'message' => 'Poster berhasil diupload. Silakan refresh halaman beranda siswa.',
+                    'url' => asset('assets/' . $filename . '?t=' . time())
                 ]);
             } catch (\Exception $e) {
                 return response()->json([
@@ -291,7 +292,8 @@ class AdminController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Background berhasil diupload.'
+                    'message' => 'Background berhasil diupload.',
+                    'url' => asset('assets/' . $filename . '?t=' . time())
                 ]);
             } catch (\Exception $e) {
                 return response()->json([
